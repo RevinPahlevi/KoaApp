@@ -24,6 +24,7 @@ import {
   formatDateTimeID,
   formatShortDateID,
   getHostTokenForCode,
+  getNowLocalDateTimeInput,
   getSavedPlayerName,
   saveHostToken,
   savePlayerName,
@@ -270,6 +271,10 @@ export default function ScheduleDetail({ code, onBack }) {
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     setActionError('');
+    if (editStartAt && new Date(editStartAt).getTime() < Date.now()) {
+      setActionError('Tanggal dan jam bermain tidak boleh waktu yang sudah lewat.');
+      return;
+    }
     setSubmitting(true);
     try {
       const updated = await api.updateSchedule(code, {
@@ -506,6 +511,7 @@ export default function ScheduleDetail({ code, onBack }) {
             {schedule.status !== 'polling' && (
               <input
                 type="datetime-local"
+                min={getNowLocalDateTimeInput()}
                 value={editStartAt}
                 onChange={(e) => setEditStartAt(e.target.value)}
                 className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"
@@ -801,6 +807,12 @@ export default function ScheduleDetail({ code, onBack }) {
 
             {!isLocked && (
               <div className="space-y-3">
+                {quotaFull && myRsvp?.status !== 'attending' && (
+                  <div className="rounded-xl bg-[#FAE6E3] border border-[#B83A2D]/35 px-3.5 py-2.5 text-xs font-bold text-[#B83A2D]">
+                    Kuota meja sudah penuh ({attendingList.length}/{schedule.quota}). Pendaftaran kehadiran baru sudah ditutup.
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   <button
                     type="button"
@@ -821,7 +833,7 @@ export default function ScheduleDetail({ code, onBack }) {
 
                   <button
                     type="button"
-                    disabled={submitting}
+                    disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}
                     onClick={() => {
                       setSelectedRsvpStatus('maybe');
                       setRsvpFeedback(null);
@@ -829,7 +841,7 @@ export default function ScheduleDetail({ code, onBack }) {
                     className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'maybe'
                         ? 'border-[#E0A928] bg-[#E0A928] text-[#3E2723] shadow-xs'
-                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB]'
+                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB] disabled:opacity-40 disabled:cursor-not-allowed'
                     }`}
                   >
                     <HelpCircle className="h-4 w-4" /> Belum Pasti
@@ -837,7 +849,7 @@ export default function ScheduleDetail({ code, onBack }) {
 
                   <button
                     type="button"
-                    disabled={submitting}
+                    disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}
                     onClick={() => {
                       setSelectedRsvpStatus('declined');
                       setRsvpFeedback(null);
@@ -845,7 +857,7 @@ export default function ScheduleDetail({ code, onBack }) {
                     className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'declined'
                         ? 'border-[#B83A2D] bg-[#B83A2D] text-[#FFFDF8] shadow-xs'
-                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB]'
+                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB] disabled:opacity-40 disabled:cursor-not-allowed'
                     }`}
                   >
                     <XCircle className="h-4 w-4" /> Tidak Hadir
@@ -854,11 +866,19 @@ export default function ScheduleDetail({ code, onBack }) {
 
                 <button
                   type="button"
-                  disabled={submitting || !selectedRsvpStatus}
+                  disabled={
+                    submitting ||
+                    !selectedRsvpStatus ||
+                    (quotaFull && myRsvp?.status !== 'attending')
+                  }
                   onClick={handleRsvp}
                   className="w-full rounded-xl bg-[#B83A2D] py-3.5 px-4 text-sm font-extrabold text-[#FFFDF8] shadow-sm hover:bg-[#982D22] disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
-                  {submitting ? 'Menyimpan...' : 'Simpan Konfirmasi Kehadiran'}
+                  {quotaFull && myRsvp?.status !== 'attending'
+                    ? `Kuota Meja Penuh (${attendingList.length}/${schedule.quota})`
+                    : submitting
+                    ? 'Menyimpan...'
+                    : 'Simpan Konfirmasi Kehadiran'}
                 </button>
 
                 {rsvpFeedback && (

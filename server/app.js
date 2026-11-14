@@ -243,12 +243,29 @@ app.post('/api/schedules', async (req, res) => {
     return res.status(400).json({ error: 'Judul jadwal dan nama pembuat wajib diisi.' });
   }
 
-  if (mode === 'direct' && !final_start_at) {
-    return res.status(400).json({ error: 'Tanggal dan jam bermain wajib diisi untuk jadwal langsung.' });
+  if (mode === 'direct') {
+    if (!final_start_at) {
+      return res.status(400).json({ error: 'Tanggal dan jam bermain wajib diisi untuk jadwal langsung.' });
+    }
+    if (new Date(final_start_at).getTime() < Date.now() - 60000) {
+      return res
+        .status(400)
+        .json({ error: 'Tanggal dan jam bermain tidak boleh di hari atau jam yang sudah lewat.' });
+    }
   }
 
-  if (mode === 'polling' && (!Array.isArray(poll_options) || poll_options.length < 2)) {
-    return res.status(400).json({ error: 'Mode polling membutuhkan minimal 2 opsi waktu.' });
+  if (mode === 'polling') {
+    if (!Array.isArray(poll_options) || poll_options.length < 2) {
+      return res.status(400).json({ error: 'Mode polling membutuhkan minimal 2 opsi waktu.' });
+    }
+    const hasPast = poll_options.some(
+      (opt) => opt?.start_at && new Date(opt.start_at).getTime() < Date.now() - 60000
+    );
+    if (hasPast) {
+      return res
+        .status(400)
+        .json({ error: 'Opsi waktu polling tidak boleh di tanggal atau jam yang sudah lewat.' });
+    }
   }
 
   const code = await generateUniqueCode();
@@ -497,7 +514,7 @@ app.post('/api/schedules/:code/rsvp', async (req, res) => {
 
   const cleanName = participant_name.trim();
 
-  if (status === 'attending' && schedule.quota > 0) {
+  if (schedule.quota > 0) {
     const existing = await queryOne(
       'SELECT status FROM rsvps WHERE schedule_id = ? AND LOWER(participant_name) = LOWER(?)',
       [schedule.id, cleanName]
@@ -511,7 +528,7 @@ app.post('/api/schedules/:code/rsvp', async (req, res) => {
     const alreadyAttending = existing?.status === 'attending';
     if (!alreadyAttending && currentAttending >= schedule.quota) {
       return res.status(400).json({
-        error: `Kuota pemain sudah penuh (${schedule.quota}/${schedule.quota}). Anda dapat memilih "Belum Pasti" atau hubungi pembuat jadwal.`,
+        error: `Kuota meja sudah penuh (${schedule.quota}/${schedule.quota}). Pendaftaran kehadiran baru sudah ditutup.`,
       });
     }
   }

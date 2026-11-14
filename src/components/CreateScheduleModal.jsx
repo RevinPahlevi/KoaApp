@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
 import { X, Plus, Trash2, Calendar, Vote, MapPin, Users } from 'lucide-react';
 import { api } from '../api';
-import { getSavedPlayerName, saveHostToken, savePlayerName } from '../utils/storage';
+import {
+  getNowLocalDateTimeInput,
+  getSavedPlayerName,
+  saveHostToken,
+  savePlayerName,
+} from '../utils/storage';
 
 export default function CreateScheduleModal({ onClose, onCreated }) {
+  const minDateTime = getNowLocalDateTimeInput();
   const [creatorName, setCreatorName] = useState(getSavedPlayerName());
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -64,15 +70,30 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
       return;
     }
 
-    if (mode === 'direct' && !finalStartAt) {
-      setError('Silakan pilih tanggal & jam bermain.');
-      return;
+    if (mode === 'direct') {
+      if (!finalStartAt) {
+        setError('Silakan pilih tanggal & jam bermain.');
+        return;
+      }
+      if (new Date(finalStartAt).getTime() < Date.now()) {
+        setError('Tanggal dan jam bermain tidak boleh di hari atau jam yang sudah lewat.');
+        return;
+      }
     }
 
     const validPollOptions = pollOptions.filter((o) => o.start_at);
-    if (mode === 'polling' && validPollOptions.length < 2) {
-      setError('Mode polling membutuhkan minimal 2 opsi waktu yang diisi.');
-      return;
+    if (mode === 'polling') {
+      if (validPollOptions.length < 2) {
+        setError('Mode polling membutuhkan minimal 2 opsi waktu yang diisi.');
+        return;
+      }
+      const hasPastOption = validPollOptions.some(
+        (o) => new Date(o.start_at).getTime() < Date.now()
+      );
+      if (hasPastOption) {
+        setError('Opsi waktu polling tidak boleh di tanggal atau jam yang sudah lewat.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -220,6 +241,7 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
               </label>
               <input
                 type="datetime-local"
+                min={minDateTime}
                 value={finalStartAt}
                 onChange={(e) => setFinalStartAt(e.target.value)}
                 className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm font-medium focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none"
@@ -247,6 +269,7 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
                 >
                   <input
                     type="datetime-local"
+                    min={minDateTime}
                     value={opt.start_at}
                     onChange={(e) => updatePollOption(idx, 'start_at', e.target.value)}
                     className="flex-1 rounded-xl border border-[#DDD2BC] bg-[#FFFDF8] px-3 py-2 text-base sm:text-sm focus:border-[#B83A2D] focus:outline-none"
