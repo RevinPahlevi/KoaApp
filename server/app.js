@@ -6,7 +6,7 @@ import { execute, insertReturningId, queryAll, queryOne } from './db.js';
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ type: ['application/json', 'text/plain'] }));
 
 const nowIso = () => new Date().toISOString();
 
@@ -420,7 +420,7 @@ app.patch('/api/schedules/:code', async (req, res) => {
 // Vote on poll options (no login, participant_name based)
 app.post('/api/schedules/:code/vote', async (req, res) => {
   const code = req.params.code.trim().toUpperCase();
-  const { participant_name, option_ids } = req.body;
+  const { participant_name, option_ids } = req.body || {};
   const hostToken = req.headers['x-host-token'] || '';
 
   if (!participant_name?.trim()) {
@@ -475,7 +475,7 @@ app.post('/api/schedules/:code/vote', async (req, res) => {
 // RSVP / Attendance confirmation (no login, participant_name based)
 app.post('/api/schedules/:code/rsvp', async (req, res) => {
   const code = req.params.code.trim().toUpperCase();
-  const { participant_name, status, note = '' } = req.body;
+  const { participant_name, status, note = '' } = req.body || {};
   const hostToken = req.headers['x-host-token'] || '';
 
   if (!participant_name?.trim()) {

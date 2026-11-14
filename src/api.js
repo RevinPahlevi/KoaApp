@@ -1,12 +1,13 @@
 import { getHostTokenForCode } from './utils/storage';
 
 async function request(url, options = {}) {
+  const { headers: customHeaders, ...restOptions } = options;
   const res = await fetch(url, {
+    ...restOptions,
     headers: {
       'Content-Type': 'application/json',
-      ...(options.headers || {}),
+      ...(customHeaders || {}),
     },
-    ...options,
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
