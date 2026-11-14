@@ -37,6 +37,8 @@ export default function ScheduleDetail({ code, onBack }) {
   const [actionError, setActionError] = useState('');
   const [playerName, setPlayerName] = useState(getSavedPlayerName());
   const [rsvpNote, setRsvpNote] = useState('');
+  const [selectedRsvpStatus, setSelectedRsvpStatus] = useState('');
+  const [rsvpFeedback, setRsvpFeedback] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [copied, setCopied] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -170,10 +172,21 @@ export default function ScheduleDetail({ code, onBack }) {
     }
   };
 
-  const handleRsvp = async (status) => {
+  const handleRsvp = async () => {
     setActionError('');
+    setRsvpFeedback(null);
     if (!playerName.trim()) {
-      setActionError('Masukkan nama Anda terlebih dahulu untuk konfirmasi kehadiran.');
+      setRsvpFeedback({
+        type: 'error',
+        text: 'Masukkan nama Anda terlebih dahulu di kotak "Nama Anda" di atas.',
+      });
+      return;
+    }
+    if (!selectedRsvpStatus) {
+      setRsvpFeedback({
+        type: 'error',
+        text: 'Pilih salah satu status (Hadir, Belum Pasti, atau Tidak Hadir) terlebih dahulu.',
+      });
       return;
     }
     savePlayerName(playerName);
@@ -181,12 +194,19 @@ export default function ScheduleDetail({ code, onBack }) {
     try {
       const updated = await api.rsvpSchedule(code, {
         participant_name: playerName.trim(),
-        status,
+        status: selectedRsvpStatus,
         note: rsvpNote,
       });
       setSchedule(updated);
+      setRsvpFeedback({
+        type: 'success',
+        text: 'Konfirmasi kehadiran berhasil disimpan ke database!',
+      });
     } catch (err) {
-      setActionError(err.message);
+      setRsvpFeedback({
+        type: 'error',
+        text: err.message,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -772,46 +792,78 @@ export default function ScheduleDetail({ code, onBack }) {
             </div>
 
             {!isLocked && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
-                <button
-                  type="button"
-                  disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}
-                  onClick={() => handleRsvp('attending')}
-                  className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
-                    myRsvp?.status === 'attending'
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
-                      : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed'
-                  }`}
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  {quotaFull && myRsvp?.status !== 'attending' ? 'Kuota Penuh' : 'Hadir'}
-                </button>
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                  <button
+                    type="button"
+                    disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}
+                    onClick={() => {
+                      setSelectedRsvpStatus('attending');
+                      setRsvpFeedback(null);
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
+                      (selectedRsvpStatus || myRsvp?.status) === 'attending'
+                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                        : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed'
+                    }`}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {quotaFull && myRsvp?.status !== 'attending' ? 'Kuota Penuh' : 'Hadir'}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => {
+                      setSelectedRsvpStatus('maybe');
+                      setRsvpFeedback(null);
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
+                      (selectedRsvpStatus || myRsvp?.status) === 'maybe'
+                        ? 'border-amber-500 bg-amber-500 text-white shadow-xs'
+                        : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'
+                    }`}
+                  >
+                    <HelpCircle className="h-4 w-4" /> Belum Pasti
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => {
+                      setSelectedRsvpStatus('declined');
+                      setRsvpFeedback(null);
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
+                      (selectedRsvpStatus || myRsvp?.status) === 'declined'
+                        ? 'border-rose-600 bg-rose-600 text-white shadow-xs'
+                        : 'border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100'
+                    }`}
+                  >
+                    <XCircle className="h-4 w-4" /> Tidak Hadir
+                  </button>
+                </div>
 
                 <button
                   type="button"
-                  disabled={submitting}
-                  onClick={() => handleRsvp('maybe')}
-                  className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
-                    myRsvp?.status === 'maybe'
-                      ? 'border-amber-500 bg-amber-500 text-white'
-                      : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'
-                  }`}
+                  disabled={submitting || !selectedRsvpStatus}
+                  onClick={handleRsvp}
+                  className="w-full rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold text-white shadow-xs hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
-                  <HelpCircle className="h-4 w-4" /> Belum Pasti
+                  {submitting ? 'Menyimpan...' : 'Simpan Konfirmasi Kehadiran'}
                 </button>
 
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => handleRsvp('declined')}
-                  className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
-                    myRsvp?.status === 'declined'
-                      ? 'border-rose-600 bg-rose-600 text-white'
-                      : 'border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100'
-                  }`}
-                >
-                  <XCircle className="h-4 w-4" /> Tidak Hadir
-                </button>
+                {rsvpFeedback && (
+                  <div
+                    className={`rounded-xl border px-3.5 py-2.5 text-xs font-medium ${
+                      rsvpFeedback.type === 'success'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        : 'bg-rose-50 border-rose-200 text-rose-700'
+                    }`}
+                  >
+                    {rsvpFeedback.text}
+                  </div>
+                )}
               </div>
             )}
 
