@@ -1,7 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+  --color-kopi: #3E2723;
+  --color-kopi-light: #5D4037;
+  --color-kopi-muted: #7A5C52;
+  --color-krem: #EFE9DB;
+  --color-krem-card: #FAF6EE;
+  --color-krem-surface: #FFFDF8;
+  --color-krem-border: #DDD2BC;
+  --color-mustard: #E0A928;
+  --color-mustard-dark: #C48F17;
+  --color-mustard-soft: #FBF1D4;
+  --color-bata: #B83A2D;
+  --color-bata-dark: #982D22;
+  --color-bata-soft: #FAE6E3;
+}
+
 @layer base {
   body {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: #EFE9DB;
+    color: #3E2723;
   }
 }

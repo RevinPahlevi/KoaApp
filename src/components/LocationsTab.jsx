@@ -54,14 +54,14 @@ export default function LocationsTab() {
     <div className="space-y-6">
       <form
         onSubmit={handleAdd}
-        className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm space-y-4"
+        className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs space-y-4"
       >
-        <div className="flex items-center gap-2 text-base font-bold text-slate-900">
-          <MapPin className="h-5 w-5 text-emerald-600" />
-          Tambah Lokasi Bermain Baru
+        <div className="flex items-center gap-2 text-base font-extrabold text-[#3E2723]">
+          <MapPin className="h-5 w-5 text-[#B83A2D]" />
+          Tambah Lokasi Lapau Baru
         </div>
         {error && (
-          <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700">
+          <div className="rounded-xl bg-[#FAE6E3] border border-[#B83A2D]/30 px-3 py-2 text-xs font-semibold text-[#B83A2D]">
             {error}
           </div>
         )}
@@ -70,8 +70,8 @@ export default function LocationsTab() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nama tempat (cth: Warkop Maju)"
-            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
+            placeholder="Nama lapau (cth: Lapau Kopi Maju)"
+            className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none"
             required
           />
           <input
@@ -79,32 +79,32 @@ export default function LocationsTab() {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Alamat lengkap / patokan"
-            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
+            className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none"
           />
           <input
             type="url"
             value={mapsUrl}
             onChange={(e) => setMapsUrl(e.target.value)}
             placeholder="Link Google Maps (opsional)"
-            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
+            className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none"
           />
         </div>
         <div className="flex justify-end">
           <button
             type="submit"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 sm:py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#B83A2D] px-4 py-2.5 sm:py-2 text-sm font-bold text-[#FFFDF8] hover:bg-[#982D22] transition"
           >
             <Plus className="h-4 w-4" /> Simpan Lokasi
           </button>
         </div>
       </form>
 
-      <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
-        <h3 className="text-base font-bold text-slate-900 mb-4">Daftar Lokasi Tersimpan</h3>
+      <div className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs">
+        <h3 className="text-base font-extrabold text-[#3E2723] mb-4">Daftar Lapau Tersimpan</h3>
         {loading ? (
-          <p className="text-sm text-slate-500">Memuat lokasi...</p>
+          <p className="text-sm text-[#7A5C52]">Memuat lokasi...</p>
         ) : locations.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[#7A5C52]">
             Belum ada lokasi tersimpan. Lokasi juga otomatis tersimpan saat Anda membuat jadwal baru.
           </p>
         ) : (
@@ -112,17 +112,17 @@ export default function LocationsTab() {
             {locations.map((loc) => (
               <div
                 key={loc.id}
-                className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 p-4"
+                className="flex items-start justify-between gap-3 rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] p-4"
               >
                 <div>
-                  <div className="font-semibold text-slate-900">{loc.name}</div>
-                  {loc.address && <div className="text-xs text-slate-500 mt-0.5">{loc.address}</div>}
+                  <div className="font-bold text-[#3E2723]">{loc.name}</div>
+                  {loc.address && <div className="text-xs text-[#7A5C52] mt-0.5">{loc.address}</div>}
                   {loc.maps_url && (
                     <a
                       href={loc.maps_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:underline"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#B83A2D] hover:underline"
                     >
                       Buka di Google Maps <ExternalLink className="h-3 w-3" />
                     </a>
@@ -130,7 +130,7 @@ export default function LocationsTab() {
                 </div>
                 <button
                   onClick={() => handleDelete(loc.id)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                  className="rounded-lg p-1.5 text-[#7A5C52] hover:bg-[#FAE6E3] hover:text-[#B83A2D]"
                   title="Hapus lokasi"
                 >
                   <Trash2 className="h-4 w-4" />

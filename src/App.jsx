@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
   Calendar,
+  Coffee,
   Hash,
   History,
   MapPin,
   Plus,
   Search,
-  Sparkles,
   Users,
   Vote,
 } from 'lucide-react';
@@ -80,57 +80,67 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#EFE9DB] text-[#3E2723]">
+      {/* Marawa Top Accent Stripe (Merah Bata - Kuning Mustard - Cokelat Kopi) */}
+      <div className="grid grid-cols-3 h-1.5 w-full">
+        <div className="bg-[#B83A2D]" />
+        <div className="bg-[#E0A928]" />
+        <div className="bg-[#3E2723]" />
+      </div>
+
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      <header className="sticky top-0 z-30 border-b border-[#DDD2BC] bg-[#FAF6EE]/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5">
           <button
             onClick={() => {
               navigateHome();
               setActiveTab('schedules');
             }}
-            className="flex items-center gap-2.5 text-left"
+            className="flex items-center gap-3 text-left group"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-lg shadow-xs">
+            <div className="relative flex h-10 w-8 items-center justify-center rounded-lg bg-[#B83A2D] text-[#FFFDF8] font-extrabold text-base shadow-sm border-2 border-[#E0A928] group-hover:-rotate-3 transition">
               K
+              <span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full bg-[#E0A928] border border-[#3E2723]" />
             </div>
             <div>
-              <div className="text-base font-extrabold tracking-tight text-slate-900 leading-none">
-                KoaPlay
+              <div className="text-lg font-extrabold tracking-tight text-[#3E2723] leading-none">
+                Koa<span className="text-[#B83A2D]">Play</span>
               </div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Jadwal Main Koa Tanpa Login</div>
+              <div className="text-[11px] font-medium text-[#7A5C52] mt-0.5">
+                Meja Janjian Bakoa di Lapau
+              </div>
             </div>
           </button>
 
           <div className="flex items-center gap-2">
             {!activeCode && (
-              <nav className="hidden sm:flex items-center gap-1 mr-2">
+              <nav className="hidden sm:flex items-center gap-1 mr-2 rounded-xl bg-[#EFE9DB] p-1 border border-[#DDD2BC]">
                 <button
                   onClick={() => setActiveTab('schedules')}
-                  className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
                     activeTab === 'schedules'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-slate-600 hover:bg-slate-100'
+                      ? 'bg-[#3E2723] text-[#EFE9DB] shadow-2xs'
+                      : 'text-[#5D4037] hover:text-[#3E2723]'
                   }`}
                 >
                   Jadwal
                 </button>
                 <button
                   onClick={() => setActiveTab('locations')}
-                  className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
                     activeTab === 'locations'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-slate-600 hover:bg-slate-100'
+                      ? 'bg-[#3E2723] text-[#EFE9DB] shadow-2xs'
+                      : 'text-[#5D4037] hover:text-[#3E2723]'
                   }`}
                 >
-                  Lokasi
+                  Lokasi Lapau
                 </button>
                 <button
                   onClick={() => setActiveTab('history')}
-                  className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
                     activeTab === 'history'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-slate-600 hover:bg-slate-100'
+                      ? 'bg-[#3E2723] text-[#EFE9DB] shadow-2xs'
+                      : 'text-[#5D4037] hover:text-[#3E2723]'
                   }`}
                 >
                   Riwayat & Statistik
@@ -140,7 +150,7 @@ export default function App() {
 
             <button
               onClick={() => setShowCreate(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 sm:px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-[0.98] transition"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#B83A2D] px-4 py-2.5 text-xs sm:text-sm font-bold text-[#FFFDF8] shadow-sm hover:bg-[#982D22] active:scale-[0.98] transition"
             >
               <Plus className="h-4 w-4" /> Buat Jadwal
             </button>
@@ -149,7 +159,7 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-24 sm:py-6">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-24 sm:py-7">
         {activeCode ? (
           <ScheduleDetail code={activeCode} onBack={navigateHome} />
         ) : activeTab === 'locations' ? (
@@ -159,38 +169,42 @@ export default function App() {
         ) : (
           <div className="space-y-6">
             {/* Hero / Quick Join */}
-            <div className="rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 p-6 text-white shadow-sm">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-                <div className="space-y-1.5 max-w-xl">
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
-                    <Sparkles className="h-3.5 w-3.5" /> Tanpa Daftar & Tanpa Login
+            <div className="relative overflow-hidden rounded-3xl bg-[#3E2723] p-6 sm:p-8 text-[#EFE9DB] shadow-md border border-[#5D4037]">
+              {/* Decorative warm circles */}
+              <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-[#E0A928]/15 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-[#B83A2D]/20 blur-2xl" />
+
+              <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-2.5 max-w-xl">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-[#E0A928] px-3 py-1 text-xs font-extrabold text-[#3E2723]">
+                    <Coffee className="h-3.5 w-3.5" /> Tanpa Login • Langsung Main
                   </div>
-                  <h1 className="text-xl sm:text-2xl font-bold">
-                    Atur Jadwal Main Koa Bareng Teman dalam Hitungan Detik
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#FFFDF8]">
+                    Kumpulkan Mandan, Atur Meja Koa Tanpa Ribet
                   </h1>
-                  <p className="text-xs sm:text-sm text-emerald-100">
-                    Buat jadwal atau polling waktu, bagikan link ke grup WhatsApp, dan pantau siapa
-                    saja yang hadir secara terpusat.
+                  <p className="text-xs sm:text-sm text-[#EFE9DB]/85 leading-relaxed">
+                    Buat jadwal atau voting waktu, bagikan kode ke grup WhatsApp, dan biarkan sistem
+                    mengacak pasangan mandan otomatis saat 4 pemain sudah kumpul.
                   </p>
                 </div>
 
                 <form
                   onSubmit={handleJoinSubmit}
-                  className="flex w-full md:w-auto items-center gap-2 rounded-xl bg-white/10 p-1.5 backdrop-blur-xs border border-white/20"
+                  className="flex w-full md:w-auto items-center gap-2 rounded-2xl bg-[#FFFDF8]/10 p-2 backdrop-blur-xs border border-[#EFE9DB]/20"
                 >
                   <div className="relative flex-1 md:w-48">
-                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-200" />
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#E0A928]" />
                     <input
                       type="text"
                       value={joinCode}
                       onChange={(e) => setJoinCode(e.target.value)}
                       placeholder="Kode (cth: KOA-7X92)"
-                      className="w-full rounded-lg bg-transparent pl-9 pr-3 py-2.5 sm:py-2 text-base sm:text-sm text-white placeholder:text-emerald-200/80 focus:outline-none uppercase"
+                      className="w-full rounded-xl bg-transparent pl-9 pr-3 py-2.5 sm:py-2 text-base sm:text-sm font-semibold text-[#FFFDF8] placeholder:text-[#EFE9DB]/60 focus:outline-none uppercase"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-1 rounded-lg bg-white px-4 py-2.5 sm:py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50 active:scale-[0.98]"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#E0A928] px-4 py-2.5 sm:py-2 text-xs font-extrabold text-[#3E2723] hover:bg-[#C48F17] active:scale-[0.98] transition"
                   >
                     <Search className="h-3.5 w-3.5" /> Buka
                   </button>
@@ -202,7 +216,7 @@ export default function App() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
                 {[
-                  { key: 'all', label: 'Semua' },
+                  { key: 'all', label: 'Semua Meja' },
                   { key: 'scheduled', label: 'Terjadwal' },
                   { key: 'polling', label: 'Sedang Voting' },
                   { key: 'completed', label: 'Selesai' },
@@ -210,10 +224,10 @@ export default function App() {
                   <button
                     key={f.key}
                     onClick={() => setStatusFilter(f.key)}
-                    className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                    className={`rounded-full px-4 py-2 text-xs font-bold transition ${
                       statusFilter === f.key
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                        ? 'bg-[#3E2723] text-[#EFE9DB] shadow-xs'
+                        : 'bg-[#FAF6EE] border border-[#DDD2BC] text-[#5D4037] hover:bg-[#FFFDF8] hover:border-[#3E2723]/40'
                     }`}
                   >
                     {f.label}
@@ -224,21 +238,23 @@ export default function App() {
 
             {/* Schedule Cards */}
             {loading ? (
-              <div className="py-12 text-center text-sm text-slate-500">Memuat daftar jadwal...</div>
+              <div className="py-14 text-center text-sm font-medium text-[#7A5C52]">
+                Memuat daftar meja jadwal...
+              </div>
             ) : loadError ? (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700">
+              <div className="rounded-2xl border border-[#B83A2D]/30 bg-[#FAE6E3] p-6 text-center text-sm font-semibold text-[#B83A2D]">
                 {loadError}
               </div>
             ) : schedules.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-                <Calendar className="mx-auto h-10 w-10 text-slate-300 mb-3" />
-                <h3 className="text-base font-bold text-slate-800">Belum Ada Jadwal</h3>
-                <p className="text-sm text-slate-500 mt-1 mb-4">
-                  Klik tombol "Buat Jadwal" untuk membuat sesi bermain Koa pertama Anda.
+              <div className="rounded-3xl border-2 border-dashed border-[#DDD2BC] bg-[#FAF6EE] p-10 text-center">
+                <Calendar className="mx-auto h-10 w-10 text-[#7A5C52]/60 mb-3" />
+                <h3 className="text-base font-extrabold text-[#3E2723]">Belum Ada Meja Jadwal</h3>
+                <p className="text-sm text-[#7A5C52] mt-1 mb-5">
+                  Klik tombol "Buat Jadwal" untuk membuka meja permainan Koa baru.
                 </p>
                 <button
                   onClick={() => setShowCreate(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#B83A2D] px-5 py-2.5 text-sm font-bold text-[#FFFDF8] hover:bg-[#982D22] transition"
                 >
                   <Plus className="h-4 w-4" /> Buat Jadwal Sekarang
                 </button>
@@ -249,26 +265,28 @@ export default function App() {
                   <div
                     key={s.id}
                     onClick={() => navigateToSchedule(s.code)}
-                    className="group cursor-pointer rounded-2xl bg-white border border-slate-200 p-5 shadow-xs hover:border-emerald-400 hover:shadow-md transition flex flex-col justify-between gap-4"
+                    className="group relative overflow-hidden cursor-pointer rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs hover:border-[#B83A2D] hover:shadow-md transition flex flex-col justify-between gap-4"
                   >
-                    <div className="space-y-2">
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#B83A2D] via-[#E0A928] to-[#3E2723] opacity-75 group-hover:opacity-100 transition" />
+
+                    <div className="space-y-3 pt-1">
                       <div className="flex items-center justify-between gap-2">
                         <StatusBadge status={s.status} />
-                        <span className="font-mono text-xs font-semibold text-slate-500">
+                        <span className="font-mono text-xs font-bold bg-[#EFE9DB] text-[#3E2723] px-2.5 py-1 rounded-lg border border-[#DDD2BC]">
                           {s.code}
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition">
+                      <h3 className="text-lg font-extrabold text-[#3E2723] group-hover:text-[#B83A2D] transition">
                         {s.title}
                       </h3>
 
-                      <div className="space-y-1 text-xs text-slate-600">
+                      <div className="space-y-1.5 text-xs font-medium text-[#5D4037]">
                         <div className="flex items-center gap-2">
                           {s.status === 'polling' ? (
-                            <Vote className="h-4 w-4 text-amber-500 shrink-0" />
+                            <Vote className="h-4 w-4 text-[#E0A928] shrink-0" />
                           ) : (
-                            <Calendar className="h-4 w-4 text-emerald-600 shrink-0" />
+                            <Calendar className="h-4 w-4 text-[#B83A2D] shrink-0" />
                           )}
                           <span>
                             {s.status === 'polling'
@@ -278,21 +296,21 @@ export default function App() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-sky-600 shrink-0" />
-                          <span>{s.location_name || 'Lokasi belum ditentukan'}</span>
+                          <MapPin className="h-4 w-4 text-[#3E2723] shrink-0" />
+                          <span>{s.location_name || 'Lapau / lokasi belum ditentukan'}</span>
                         </div>
                       </div>
 
                       {s.attending_names?.length > 0 && (
-                        <div className="pt-1.5">
-                          <div className="text-[11px] font-medium text-slate-500 mb-1">
-                            Sudah bergabung:
+                        <div className="pt-2">
+                          <div className="text-[11px] font-bold uppercase tracking-wider text-[#7A5C52] mb-1.5">
+                            Pemain Bergabung:
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {s.attending_names.map((name, idx) => (
                               <span
                                 key={`${name}-${idx}`}
-                                className="rounded-md bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 text-[11px] font-semibold text-emerald-800"
+                                className="rounded-lg bg-[#E0A928]/20 border border-[#E0A928]/50 px-2.5 py-0.5 text-xs font-bold text-[#3E2723]"
                               >
                                 {name}
                               </span>
@@ -302,14 +320,14 @@ export default function App() {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-                      <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
-                        <Users className="h-3.5 w-3.5" />
+                    <div className="flex items-center justify-between pt-3 border-t border-[#EFE9DB] text-xs">
+                      <span className="inline-flex items-center gap-1.5 font-extrabold text-[#3E2723]">
+                        <Users className="h-4 w-4 text-[#B83A2D]" />
                         {s.attending_count}
-                        {s.quota > 0 ? `/${s.quota}` : ''} Hadir
+                        {s.quota > 0 ? `/${s.quota}` : ''} Pemain Hadir
                       </span>
-                      <span className="font-semibold text-emerald-700 group-hover:underline">
-                        Ikut / Lihat →
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-[#EFE9DB] group-hover:bg-[#B83A2D] group-hover:text-[#FFFDF8] px-3 py-1 font-bold text-[#3E2723] transition">
+                        Ikut / Buka Meja →
                       </span>
                     </div>
                   </div>
@@ -322,12 +340,12 @@ export default function App() {
 
       {/* Mobile Bottom Navigation */}
       {!activeCode && (
-        <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+        <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#DDD2BC] bg-[#FAF6EE]/95 backdrop-blur-md">
           <div className="grid grid-cols-3 h-16">
             <button
               onClick={() => setActiveTab('schedules')}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
-                activeTab === 'schedules' ? 'text-emerald-600' : 'text-slate-500'
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+                activeTab === 'schedules' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
               }`}
             >
               <Calendar className="h-5 w-5" />
@@ -335,17 +353,17 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab('locations')}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
-                activeTab === 'locations' ? 'text-emerald-600' : 'text-slate-500'
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+                activeTab === 'locations' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
               }`}
             >
               <MapPin className="h-5 w-5" />
-              Lokasi
+              Lokasi Lapau
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
-                activeTab === 'history' ? 'text-emerald-600' : 'text-slate-500'
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+                activeTab === 'history' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
               }`}
             >
               <History className="h-5 w-5" />

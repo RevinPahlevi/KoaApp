@@ -1,31 +1,37 @@
 const STATUS_MAP = {
   polling: {
     label: 'Voting Waktu',
-    cls: 'bg-amber-100 text-amber-800 border-amber-200',
+    cls: 'bg-[#E0A928]/25 text-[#3E2723] border-[#E0A928]',
+    dot: 'bg-[#B83A2D]',
   },
   scheduled: {
     label: 'Terjadwal',
-    cls: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    cls: 'bg-[#3E2723] text-[#EFE9DB] border-[#3E2723]',
+    dot: 'bg-[#E0A928]',
   },
   completed: {
     label: 'Selesai',
-    cls: 'bg-slate-200 text-slate-700 border-slate-300',
+    cls: 'bg-[#EFE9DB] text-[#5D4037] border-[#DDD2BC]',
+    dot: 'bg-[#7A5C52]',
   },
   cancelled: {
     label: 'Dibatalkan',
-    cls: 'bg-rose-100 text-rose-700 border-rose-200',
+    cls: 'bg-[#B83A2D]/15 text-[#B83A2D] border-[#B83A2D]/35',
+    dot: 'bg-[#B83A2D]',
   },
 };
 
 export default function StatusBadge({ status }) {
   const info = STATUS_MAP[status] || {
     label: status,
-    cls: 'bg-slate-100 text-slate-700 border-slate-200',
+    cls: 'bg-[#EFE9DB] text-[#3E2723] border-[#DDD2BC]',
+    dot: 'bg-[#3E2723]',
   };
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${info.cls}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide border ${info.cls}`}
     >
+      <span className={`h-1.5 w-1.5 rounded-full ${info.dot}`} />
       {info.label}
     </span>
   );

@@ -111,53 +111,55 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 p-0 sm:p-4 backdrop-blur-xs">
-      <div className="w-full max-w-xl max-h-[92dvh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white shadow-xl border border-slate-200">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-5 sm:px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#3E2723]/60 p-0 sm:p-4 backdrop-blur-xs">
+      <div className="w-full max-w-xl max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-[#FFFDF8] shadow-2xl border border-[#DDD2BC] text-[#3E2723]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#EFE9DB] bg-[#FAF6EE] px-5 sm:px-6 py-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Buat Jadwal Main Koa</h2>
-            <p className="text-xs text-slate-500">Tanpa login — langsung bagikan link ke teman</p>
+            <h2 className="text-lg font-extrabold text-[#3E2723]">Buka Meja Jadwal Koa</h2>
+            <p className="text-xs font-medium text-[#7A5C52]">
+              Tanpa login — langsung bagikan link ke grup lapau
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-xl p-1.5 text-[#7A5C52] hover:bg-[#EFE9DB] hover:text-[#3E2723]"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
           {error && (
-            <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+            <div className="rounded-xl bg-[#FAE6E3] border border-[#B83A2D]/30 px-4 py-3 text-sm font-semibold text-[#B83A2D]">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Nama Anda <span className="text-rose-500">*</span>
+              <label className="block text-sm font-bold text-[#3E2723] mb-1">
+                Nama Anda <span className="text-[#B83A2D]">*</span>
               </label>
               <input
                 type="text"
                 value={creatorName}
                 onChange={(e) => setCreatorName(e.target.value)}
-                placeholder="cth: Budi"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                placeholder="cth: Uda Budi"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm font-medium focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#B83A2D]/20"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Judul Sesi <span className="text-rose-500">*</span>
+              <label className="block text-sm font-bold text-[#3E2723] mb-1">
+                Judul Meja / Sesi <span className="text-[#B83A2D]">*</span>
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="cth: Koa Malam Minggu"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                placeholder="cth: Bakoa Malam Minggu"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm font-medium focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#B83A2D]/20"
                 required
               />
             </div>
@@ -165,37 +167,47 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
 
           {/* Mode penjadwalan */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Cara Tentukan Waktu</label>
+            <label className="block text-sm font-bold text-[#3E2723] mb-2">Cara Tentukan Waktu</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setMode('direct')}
-                className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition ${
+                className={`flex items-center gap-2.5 rounded-xl border p-3.5 text-left transition ${
                   mode === 'direct'
-                    ? 'border-emerald-600 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-600'
-                    : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    ? 'border-[#3E2723] bg-[#3E2723] text-[#EFE9DB] shadow-xs'
+                    : 'border-[#DDD2BC] bg-[#FAF6EE] hover:bg-[#EFE9DB]/60 text-[#3E2723]'
                 }`}
               >
-                <Calendar className="h-5 w-5 shrink-0 text-emerald-600" />
+                <Calendar
+                  className={`h-5 w-5 shrink-0 ${
+                    mode === 'direct' ? 'text-[#E0A928]' : 'text-[#B83A2D]'
+                  }`}
+                />
                 <div>
-                  <div className="text-sm font-semibold">Langsung Jadwal</div>
-                  <div className="text-xs text-slate-500">Waktu sudah pasti</div>
+                  <div className="text-sm font-bold">Langsung Jadwal</div>
+                  <div
+                    className={`text-xs ${
+                      mode === 'direct' ? 'text-[#EFE9DB]/75' : 'text-[#7A5C52]'
+                    }`}
+                  >
+                    Waktu sudah pasti
+                  </div>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setMode('polling')}
-                className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition ${
+                className={`flex items-center gap-2.5 rounded-xl border p-3.5 text-left transition ${
                   mode === 'polling'
-                    ? 'border-amber-500 bg-amber-50 text-amber-900 ring-1 ring-amber-500'
-                    : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    ? 'border-[#E0A928] bg-[#E0A928]/25 text-[#3E2723] ring-1 ring-[#E0A928]'
+                    : 'border-[#DDD2BC] bg-[#FAF6EE] hover:bg-[#EFE9DB]/60 text-[#3E2723]'
                 }`}
               >
-                <Vote className="h-5 w-5 shrink-0 text-amber-600" />
+                <Vote className="h-5 w-5 shrink-0 text-[#B83A2D]" />
                 <div>
-                  <div className="text-sm font-semibold">Polling Dulu</div>
-                  <div className="text-xs text-slate-500">Teman pilih waktu</div>
+                  <div className="text-sm font-bold">Polling Dulu</div>
+                  <div className="text-xs text-[#7A5C52]">Mandan pilih waktu</div>
                 </div>
               </button>
             </div>
@@ -203,38 +215,41 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
 
           {mode === 'direct' ? (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Tanggal & Jam Mulai <span className="text-rose-500">*</span>
+              <label className="block text-sm font-bold text-[#3E2723] mb-1">
+                Tanggal & Jam Mulai <span className="text-[#B83A2D]">*</span>
               </label>
               <input
                 type="datetime-local"
                 value={finalStartAt}
                 onChange={(e) => setFinalStartAt(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm font-medium focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none"
                 required
               />
             </div>
           ) : (
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-bold text-[#3E2723]">
                   Opsi Waktu Polling (min. 2)
                 </label>
                 <button
                   type="button"
                   onClick={addPollOption}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+                  className="inline-flex items-center gap-1 text-xs font-extrabold text-[#B83A2D] hover:underline"
                 >
                   <Plus className="h-3.5 w-3.5" /> Tambah Opsi
                 </button>
               </div>
               {pollOptions.map((opt, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-xl bg-slate-50/70 sm:bg-transparent p-2.5 sm:p-0 border border-slate-200/70 sm:border-0">
+                <div
+                  key={idx}
+                  className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-xl bg-[#FAF6EE] p-2.5 sm:p-0 border border-[#DDD2BC] sm:border-0"
+                >
                   <input
                     type="datetime-local"
                     value={opt.start_at}
                     onChange={(e) => updatePollOption(idx, 'start_at', e.target.value)}
-                    className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
+                    className="flex-1 rounded-xl border border-[#DDD2BC] bg-[#FFFDF8] px-3 py-2 text-base sm:text-sm focus:border-[#B83A2D] focus:outline-none"
                   />
                   <div className="flex items-center gap-2">
                     <input
@@ -242,13 +257,13 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
                       value={opt.note}
                       onChange={(e) => updatePollOption(idx, 'note', e.target.value)}
                       placeholder="Ket. (opsional)"
-                      className="flex-1 sm:w-36 rounded-xl border border-slate-300 bg-white px-3 py-2 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
+                      className="flex-1 sm:w-36 rounded-xl border border-[#DDD2BC] bg-[#FFFDF8] px-3 py-2 text-base sm:text-sm focus:border-[#B83A2D] focus:outline-none"
                     />
                     {pollOptions.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removePollOption(idx)}
-                        className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                        className="rounded-lg p-2 text-[#7A5C52] hover:bg-[#FAE6E3] hover:text-[#B83A2D]"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -260,19 +275,19 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
           )}
 
           {/* Lokasi */}
-          <div className="space-y-3 rounded-xl bg-slate-50 p-4 border border-slate-200/80">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-              <MapPin className="h-4 w-4 text-emerald-600" />
-              Lokasi Bermain
+          <div className="space-y-3 rounded-2xl bg-[#EFE9DB]/60 p-4 border border-[#DDD2BC]">
+            <div className="flex items-center gap-2 text-sm font-extrabold text-[#3E2723]">
+              <MapPin className="h-4 w-4 text-[#B83A2D]" />
+              Lokasi Lapau / Tempat Main
             </div>
 
             {locations.length > 0 && (
               <select
                 value={selectedLocId}
                 onChange={(e) => handleSelectSavedLocation(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FFFDF8] px-3 py-2.5 text-base sm:text-sm font-medium focus:border-[#B83A2D] focus:outline-none"
               >
-                <option value="custom">+ Tulis lokasi baru</option>
+                <option value="custom">+ Tulis lokasi lapau baru</option>
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
                     {loc.name} {loc.address ? `— ${loc.address}` : ''}
@@ -286,36 +301,36 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
                 type="text"
                 value={locationName}
                 onChange={(e) => setLocationName(e.target.value)}
-                placeholder="Nama tempat (cth: Warkop Maju)"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                placeholder="Nama lapau (cth: Lapau Kopi Nan Lamo)"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FFFDF8] px-3 py-2 text-base sm:text-sm focus:border-[#B83A2D] focus:outline-none"
               />
               <input
                 type="text"
                 value={locationAddress}
                 onChange={(e) => setLocationAddress(e.target.value)}
-                placeholder="Alamat singkat (opsional)"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                placeholder="Alamat / patokan (opsional)"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FFFDF8] px-3 py-2 text-base sm:text-sm focus:border-[#B83A2D] focus:outline-none"
               />
             </div>
             <input
               type="url"
               value={locationMapsUrl}
               onChange={(e) => setLocationMapsUrl(e.target.value)}
-              placeholder="Link Google Maps (opsional, cth: https://maps.app.goo.gl/...)"
-              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              placeholder="Link Google Maps (opsional)"
+              className="w-full rounded-xl border border-[#DDD2BC] bg-[#FFFDF8] px-3 py-2 text-base sm:text-sm focus:border-[#B83A2D] focus:outline-none"
             />
           </div>
 
           {/* Kuota & Catatan */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
             <div>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1">
-                <Users className="h-4 w-4 text-slate-500" /> Kuota Pemain
+              <label className="flex items-center gap-1.5 text-sm font-bold text-[#3E2723] mb-1">
+                <Users className="h-4 w-4 text-[#B83A2D]" /> Kuota Pemain
               </label>
               <select
                 value={quota}
                 onChange={(e) => setQuota(Number(e.target.value))}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm font-medium focus:border-[#B83A2D] focus:outline-none"
               >
                 <option value={4}>4 Pemain (1 Meja Koa)</option>
                 <option value={8}>8 Pemain (2 Meja Koa)</option>
@@ -324,43 +339,45 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-bold text-[#3E2723] mb-1">
                 Catatan Tambahan
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="cth: Bawa kartu cadangan"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
+                placeholder="cth: Bawa kartu ceki cadangan"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm focus:border-[#B83A2D] focus:outline-none"
               />
             </div>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+          <label className="flex items-center gap-2.5 text-sm text-[#3E2723] cursor-pointer">
             <input
               type="checkbox"
               checked={creatorAttending}
               onChange={(e) => setCreatorAttending(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-[#DDD2BC] accent-[#B83A2D]"
             />
-            Langsung tandai saya sebagai <strong>Hadir</strong>
+            <span>
+              Langsung tandai saya sebagai <strong>Hadir</strong> di meja ini
+            </span>
           </label>
 
-          <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#EFE9DB]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+              className="rounded-xl px-4 py-2.5 text-sm font-bold text-[#5D4037] hover:bg-[#EFE9DB]"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
+              className="rounded-xl bg-[#B83A2D] px-5 py-2.5 text-sm font-bold text-[#FFFDF8] shadow-sm hover:bg-[#982D22] disabled:opacity-50 transition"
             >
-              {loading ? 'Menyimpan...' : 'Buat & Dapatkan Link'}
+              {loading ? 'Menyimpan...' : 'Buat Meja & Dapatkan Link'}
             </button>
           </div>
         </form>

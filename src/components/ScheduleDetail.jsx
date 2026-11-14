@@ -292,19 +292,21 @@ export default function ScheduleDetail({ code, onBack }) {
 
   if (loading) {
     return (
-      <div className="py-16 text-center text-sm text-slate-500">Memuat detail jadwal...</div>
+      <div className="py-16 text-center text-sm font-medium text-[#7A5C52]">
+        Memuat detail meja jadwal...
+      </div>
     );
   }
 
   if (error || !schedule) {
     return (
-      <div className="mx-auto max-w-lg rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm">
-        <XCircle className="mx-auto h-10 w-10 text-rose-500 mb-3" />
-        <h2 className="text-lg font-bold text-slate-900 mb-1">Jadwal Tidak Ditemukan</h2>
-        <p className="text-sm text-slate-600 mb-5">{error}</p>
+      <div className="mx-auto max-w-lg rounded-3xl border border-[#B83A2D]/30 bg-[#FFFDF8] p-8 text-center shadow-sm">
+        <XCircle className="mx-auto h-10 w-10 text-[#B83A2D] mb-3" />
+        <h2 className="text-lg font-extrabold text-[#3E2723] mb-1">Meja Jadwal Tidak Ditemukan</h2>
+        <p className="text-sm text-[#7A5C52] mb-5">{error}</p>
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#3E2723] px-4 py-2.5 text-sm font-bold text-[#EFE9DB] hover:bg-[#5D4037]"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali ke Beranda
         </button>
@@ -321,30 +323,32 @@ export default function ScheduleDetail({ code, onBack }) {
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#5D4037] hover:text-[#3E2723]"
         >
-          <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Jadwal
+          <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Meja
         </button>
-        <span className="font-mono text-xs font-semibold bg-slate-200/80 text-slate-700 px-2.5 py-1 rounded-lg">
+        <span className="font-mono text-xs font-extrabold bg-[#3E2723] text-[#E0A928] px-3 py-1 rounded-lg">
           {schedule.code}
         </span>
       </div>
 
       {/* Main Header Card */}
-      <div className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm space-y-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="relative overflow-hidden rounded-3xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 sm:p-6 shadow-xs space-y-5">
+        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#B83A2D] via-[#E0A928] to-[#3E2723]" />
+
+        <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2.5">
               <StatusBadge status={schedule.status} />
               {schedule.is_host && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Anda Pembuat Jadwal
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#E0A928]/25 border border-[#E0A928] px-2.5 py-0.5 text-xs font-extrabold text-[#3E2723]">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#B83A2D]" /> Pembuat Meja
                 </span>
               )}
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">{schedule.title}</h1>
-            <p className="text-sm text-slate-500">
-              Dibuat oleh <strong className="text-slate-700">{schedule.creator_name}</strong>
+            <h1 className="text-2xl font-extrabold text-[#3E2723]">{schedule.title}</h1>
+            <p className="text-sm text-[#7A5C52]">
+              Dibuka oleh <strong className="text-[#3E2723]">{schedule.creator_name}</strong>
               {schedule.description ? ` • ${schedule.description}` : ''}
             </p>
           </div>
@@ -352,11 +356,11 @@ export default function ScheduleDetail({ code, onBack }) {
           <div className="flex w-full sm:w-auto gap-2">
             <button
               onClick={() => copyText(shareUrl, 'link')}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 sm:py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 sm:py-2 text-xs font-bold text-[#3E2723] hover:bg-[#EFE9DB]"
             >
               {copied === 'link' ? (
                 <>
-                  <Check className="h-4 w-4 text-emerald-600" /> Link Disalin!
+                  <Check className="h-4 w-4 text-[#B83A2D]" /> Link Disalin!
                 </>
               ) : (
                 <>
@@ -366,7 +370,7 @@ export default function ScheduleDetail({ code, onBack }) {
             </button>
             <button
               onClick={shareToWhatsApp}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2.5 sm:py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#B83A2D] px-4 py-2.5 sm:py-2 text-xs font-bold text-[#FFFDF8] hover:bg-[#982D22] shadow-xs"
             >
               <Share2 className="h-4 w-4" /> Bagikan ke WA
             </button>
@@ -374,14 +378,14 @@ export default function ScheduleDetail({ code, onBack }) {
         </div>
 
         {/* Info Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-[#EFE9DB]">
           <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-700">
+            <div className="rounded-xl bg-[#B83A2D]/15 p-2.5 text-[#B83A2D]">
               <Calendar className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-xs font-medium text-slate-500">Waktu Bermain</div>
-              <div className="text-sm font-semibold text-slate-900">
+              <div className="text-xs font-bold text-[#7A5C52]">Waktu Main</div>
+              <div className="text-sm font-extrabold text-[#3E2723]">
                 {schedule.status === 'polling'
                   ? 'Menunggu hasil voting'
                   : formatDateTimeID(schedule.final_start_at)}
@@ -390,23 +394,23 @@ export default function ScheduleDetail({ code, onBack }) {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-sky-50 p-2.5 text-sky-700">
+            <div className="rounded-xl bg-[#E0A928]/25 p-2.5 text-[#3E2723]">
               <MapPin className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-xs font-medium text-slate-500">Lokasi</div>
-              <div className="text-sm font-semibold text-slate-900">
+              <div className="text-xs font-bold text-[#7A5C52]">Lokasi Lapau</div>
+              <div className="text-sm font-extrabold text-[#3E2723]">
                 {schedule.location_name || 'Belum ditentukan'}
               </div>
               {schedule.location_address && (
-                <div className="text-xs text-slate-500">{schedule.location_address}</div>
+                <div className="text-xs text-[#7A5C52]">{schedule.location_address}</div>
               )}
               {schedule.location_maps_url && (
                 <a
                   href={schedule.location_maps_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:underline"
+                  className="mt-1 inline-flex items-center gap-1 text-xs font-extrabold text-[#B83A2D] hover:underline"
                 >
                   Buka Google Maps <ExternalLink className="h-3 w-3" />
                 </a>
@@ -415,19 +419,19 @@ export default function ScheduleDetail({ code, onBack }) {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-amber-50 p-2.5 text-amber-700">
+            <div className="rounded-xl bg-[#3E2723] p-2.5 text-[#E0A928]">
               <Users className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <div className="text-xs font-medium text-slate-500">Kuota Pemain</div>
-              <div className="text-sm font-semibold text-slate-900">
-                {attendingList.length} {schedule.quota > 0 ? `/ ${schedule.quota}` : ''} Hadir
+              <div className="text-xs font-bold text-[#7A5C52]">Kuota Meja</div>
+              <div className="text-sm font-extrabold text-[#3E2723]">
+                {attendingList.length} {schedule.quota > 0 ? `/ ${schedule.quota}` : ''} Pemain Hadir
               </div>
               {schedule.quota > 0 && (
-                <div className="mt-1.5 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="mt-1.5 h-2 w-full rounded-full bg-[#EFE9DB] overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      quotaFull ? 'bg-rose-500' : 'bg-emerald-500'
+                      quotaFull ? 'bg-[#B83A2D]' : 'bg-[#E0A928]'
                     }`}
                     style={{
                       width: `${Math.min(100, (attendingList.length / schedule.quota) * 100)}%`,
@@ -441,13 +445,13 @@ export default function ScheduleDetail({ code, onBack }) {
 
         {/* Host Management Bar */}
         {schedule.is_host && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
-            <span className="text-xs font-semibold text-slate-600">Kontrol Pembuat Jadwal:</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#FAF6EE] border border-[#DDD2BC] px-4 py-3">
+            <span className="text-xs font-bold text-[#5D4037]">Kontrol Pembuat Meja:</span>
             <div className="flex flex-wrap gap-2">
               {!isLocked && (
                 <button
                   onClick={openEdit}
-                  className="inline-flex items-center gap-1 rounded-lg bg-white border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#FFFDF8] border border-[#DDD2BC] px-3 py-1.5 text-xs font-bold text-[#3E2723] hover:bg-[#EFE9DB]"
                 >
                   <Edit3 className="h-3.5 w-3.5" /> Edit Detail
                 </button>
@@ -456,16 +460,16 @@ export default function ScheduleDetail({ code, onBack }) {
                 <button
                   onClick={() => handleStatusChange('completed')}
                   disabled={submitting}
-                  className="inline-flex items-center gap-1 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-900"
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#3E2723] px-3 py-1.5 text-xs font-bold text-[#EFE9DB] hover:bg-[#5D4037]"
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Tandai Selesai
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[#E0A928]" /> Tandai Selesai
                 </button>
               )}
               {!isLocked && (
                 <button
                   onClick={() => handleStatusChange('cancelled')}
                   disabled={submitting}
-                  className="inline-flex items-center gap-1 rounded-lg bg-rose-50 border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#FAE6E3] border border-[#B83A2D]/30 px-3 py-1.5 text-xs font-bold text-[#B83A2D] hover:bg-[#B83A2D] hover:text-[#FFFDF8] transition"
                 >
                   <XCircle className="h-3.5 w-3.5" /> Batalkan
                 </button>
@@ -473,7 +477,7 @@ export default function ScheduleDetail({ code, onBack }) {
               {hostToken && (
                 <button
                   onClick={() => copyText(`${shareUrl}?host=${hostToken}`, 'hostlink')}
-                  className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#E0A928]/25 border border-[#E0A928] px-3 py-1.5 text-xs font-bold text-[#3E2723] hover:bg-[#E0A928]/40"
                 >
                   {copied === 'hostlink' ? 'Link Host Disalin!' : 'Salin Link Host'}
                 </button>
@@ -487,16 +491,16 @@ export default function ScheduleDetail({ code, onBack }) {
       {editing && (
         <form
           onSubmit={handleSaveEdit}
-          className="rounded-2xl bg-white border border-indigo-200 p-5 shadow-sm space-y-4"
+          className="rounded-2xl bg-[#FFFDF8] border border-[#E0A928] p-5 shadow-xs space-y-4"
         >
-          <h3 className="text-sm font-bold text-slate-900">Edit Detail Jadwal</h3>
+          <h3 className="text-sm font-extrabold text-[#3E2723]">Edit Detail Meja Jadwal</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
               type="text"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               placeholder="Judul jadwal"
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"
               required
             />
             {schedule.status !== 'polling' && (
@@ -504,34 +508,34 @@ export default function ScheduleDetail({ code, onBack }) {
                 type="datetime-local"
                 value={editStartAt}
                 onChange={(e) => setEditStartAt(e.target.value)}
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"
               />
             )}
             <input
               type="text"
               value={editLocName}
               onChange={(e) => setEditLocName(e.target.value)}
-              placeholder="Nama lokasi"
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              placeholder="Nama lokasi lapau"
+              className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"
             />
             <input
               type="text"
               value={editLocAddress}
               onChange={(e) => setEditLocAddress(e.target.value)}
               placeholder="Alamat"
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"
             />
             <input
               type="url"
               value={editLocMaps}
               onChange={(e) => setEditLocMaps(e.target.value)}
               placeholder="Link Google Maps"
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"
             />
             <select
               value={editQuota}
               onChange={(e) => setEditQuota(Number(e.target.value))}
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white"
+              className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"
             >
               <option value={4}>4 Pemain (1 Meja)</option>
               <option value={8}>8 Pemain (2 Meja)</option>
@@ -543,14 +547,14 @@ export default function ScheduleDetail({ code, onBack }) {
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+              className="rounded-xl px-4 py-2 text-xs font-bold text-[#5D4037] hover:bg-[#EFE9DB]"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
+              className="rounded-xl bg-[#B83A2D] px-4 py-2 text-xs font-bold text-[#FFFDF8] hover:bg-[#982D22]"
             >
               Simpan Perubahan
             </button>
@@ -560,36 +564,36 @@ export default function ScheduleDetail({ code, onBack }) {
 
       {/* Player Identity Box (No Login Required) */}
       {!isLocked && (
-        <div className="rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 shadow-sm">
+        <div className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-4 sm:p-5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                Nama Anda (Tanpa Login)
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#7A5C52] mb-1">
+                Nama Panggilan Anda (Tanpa Login)
               </label>
               <input
                 type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Ketik nama panggilan Anda, cth: Andi"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm font-medium focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                placeholder="Ketik nama Anda, cth: Andi"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm font-bold text-[#3E2723] focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#B83A2D]/20"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#7A5C52] mb-1">
                 Catatan Singkat (Opsional)
               </label>
               <input
                 type="text"
                 value={rsvpNote}
                 onChange={(e) => setRsvpNote(e.target.value)}
-                placeholder="cth: Agak telat 15 menit"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
+                placeholder="cth: Nyusul habis Isya"
+                className="w-full rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2.5 text-base sm:text-sm focus:border-[#B83A2D] focus:bg-[#FFFDF8] focus:outline-none"
               />
             </div>
           </div>
 
           {actionError && (
-            <div className="mt-3 rounded-xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 text-xs font-medium text-rose-700">
+            <div className="mt-3 rounded-xl bg-[#FAE6E3] border border-[#B83A2D]/30 px-3.5 py-2.5 text-xs font-bold text-[#B83A2D]">
               {actionError}
             </div>
           )}
@@ -600,11 +604,11 @@ export default function ScheduleDetail({ code, onBack }) {
         <div className="lg:col-span-2 space-y-6">
           {/* Polling Section */}
           {schedule.mode === 'polling' && (
-            <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
+            <div className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Vote className="h-5 w-5 text-amber-600" />
-                  <h2 className="text-base font-bold text-slate-900">
+                  <Vote className="h-5 w-5 text-[#B83A2D]" />
+                  <h2 className="text-base font-extrabold text-[#3E2723]">
                     {schedule.status === 'polling'
                       ? 'Pilih Waktu yang Anda Bisa'
                       : 'Hasil Voting Waktu'}
@@ -614,7 +618,7 @@ export default function ScheduleDetail({ code, onBack }) {
                   <button
                     onClick={handleSubmitVote}
                     disabled={submitting}
-                    className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-600 disabled:opacity-50"
+                    className="rounded-xl bg-[#E0A928] px-4 py-2 text-xs font-extrabold text-[#3E2723] hover:bg-[#C48F17] disabled:opacity-50"
                   >
                     Simpan Pilihan ({selectedOptions.length})
                   </button>
@@ -639,8 +643,8 @@ export default function ScheduleDetail({ code, onBack }) {
                         schedule.status === 'polling' ? 'cursor-pointer' : ''
                       } ${
                         isSelected
-                          ? 'border-amber-500 bg-amber-50/70 ring-1 ring-amber-500'
-                          : 'border-slate-200 hover:border-slate-300'
+                          ? 'border-[#E0A928] bg-[#E0A928]/20 ring-1 ring-[#E0A928]'
+                          : 'border-[#DDD2BC] bg-[#FAF6EE] hover:border-[#3E2723]/40'
                       }`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -650,24 +654,24 @@ export default function ScheduleDetail({ code, onBack }) {
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => {}}
-                              className="h-4 w-4 rounded border-slate-300 text-amber-600"
+                              className="h-4 w-4 rounded border-[#DDD2BC] accent-[#B83A2D]"
                             />
                           )}
                           <div>
-                            <div className="text-sm font-semibold text-slate-900">
+                            <div className="text-sm font-bold text-[#3E2723]">
                               {formatDateTimeID(opt.start_at)}
                             </div>
-                            {opt.note && <div className="text-xs text-slate-500">{opt.note}</div>}
+                            {opt.note && <div className="text-xs text-[#7A5C52]">{opt.note}</div>}
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2">
                           {isTop && (
-                            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
+                            <span className="rounded-full bg-[#B83A2D] px-2.5 py-0.5 text-[11px] font-bold text-[#FFFDF8]">
                               Suara Terbanyak
                             </span>
                           )}
-                          <span className="text-xs font-bold text-slate-700">
+                          <span className="text-xs font-extrabold text-[#3E2723]">
                             {opt.vote_count} suara
                           </span>
                           {schedule.is_host && schedule.status === 'polling' && (
@@ -677,7 +681,7 @@ export default function ScheduleDetail({ code, onBack }) {
                                 e.stopPropagation();
                                 handleFinalizePoll(opt.id);
                               }}
-                              className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                              className="rounded-lg bg-[#3E2723] px-2.5 py-1 text-xs font-bold text-[#E0A928] hover:bg-[#5D4037]"
                             >
                               Tetapkan Final
                             </button>
@@ -685,9 +689,9 @@ export default function ScheduleDetail({ code, onBack }) {
                         </div>
                       </div>
 
-                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden mb-2">
+                      <div className="h-1.5 w-full rounded-full bg-[#EFE9DB] overflow-hidden mb-2">
                         <div
-                          className="h-full bg-amber-500 rounded-full transition-all"
+                          className="h-full bg-[#B83A2D] rounded-full transition-all"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -697,7 +701,7 @@ export default function ScheduleDetail({ code, onBack }) {
                           {opt.voters.map((voter) => (
                             <span
                               key={voter}
-                              className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-xs text-slate-700"
+                              className="rounded-md bg-[#FFFDF8] border border-[#DDD2BC] px-2 py-0.5 text-xs font-semibold text-[#3E2723]"
                             >
                               {voter}
                             </span>
@@ -712,11 +716,11 @@ export default function ScheduleDetail({ code, onBack }) {
           )}
 
           {/* Mandan / Pembagian Tim Otomatis */}
-          <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
+          <div className="rounded-2xl bg-[#3E2723] text-[#EFE9DB] border border-[#5D4037] p-5 shadow-sm space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Shuffle className="h-5 w-5 text-indigo-600" />
-                <h2 className="text-base font-bold text-slate-900">
+                <Shuffle className="h-5 w-5 text-[#E0A928]" />
+                <h2 className="text-base font-extrabold text-[#FFFDF8]">
                   Pembagian Mandan (2 Orang / Tim)
                 </h2>
               </div>
@@ -725,7 +729,7 @@ export default function ScheduleDetail({ code, onBack }) {
                   type="button"
                   onClick={handleShuffleTeams}
                   disabled={submitting}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#E0A928] px-3 py-1.5 text-xs font-extrabold text-[#3E2723] hover:bg-[#C48F17] disabled:opacity-50"
                 >
                   <Shuffle className="h-3.5 w-3.5" /> Acak Ulang Mandan
                 </button>
@@ -733,10 +737,11 @@ export default function ScheduleDetail({ code, onBack }) {
             </div>
 
             {!schedule.teams?.length ? (
-              <div className="rounded-xl bg-slate-50 border border-dashed border-slate-200 px-4 py-3 text-xs text-slate-500">
-                Mandan akan otomatis dipilihkan (2 orang per tim) begitu sudah ada{' '}
-                <strong>4 pemain</strong> yang konfirmasi <strong>Hadir</strong> (saat ini{' '}
-                {attendingList.length}/4).
+              <div className="rounded-xl bg-[#FFFDF8]/10 border border-dashed border-[#EFE9DB]/25 px-4 py-3 text-xs text-[#EFE9DB]/85">
+                Pasangan mandan akan otomatis diacak (2 orang per tim) begitu sudah ada{' '}
+                <strong className="text-[#E0A928]">4 pemain</strong> yang konfirmasi{' '}
+                <strong className="text-[#E0A928]">Hadir</strong> (saat ini {attendingList.length}
+                /4).
               </div>
             ) : (
               <div className="space-y-3">
@@ -744,17 +749,17 @@ export default function ScheduleDetail({ code, onBack }) {
                   {schedule.teams.map((team) => (
                     <div
                       key={team.team_number}
-                      className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3.5"
+                      className="rounded-xl border border-[#E0A928]/40 bg-[#FFFDF8]/10 p-3.5"
                     >
-                      <div className="text-xs font-bold uppercase tracking-wide text-indigo-700 mb-2">
-                        Tim {team.team_number} (Mandan)
+                      <div className="text-xs font-extrabold uppercase tracking-wider text-[#E0A928] mb-2">
+                        Tim {team.team_number} • Sepasang Mandan
                       </div>
-                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                        <span className="rounded-lg bg-white border border-indigo-100 px-2.5 py-1 shadow-2xs">
+                      <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#3E2723]">
+                        <span className="rounded-lg bg-[#FFFDF8] px-3 py-1 shadow-xs">
                           {team.members[0]}
                         </span>
-                        <span className="text-xs font-bold text-indigo-400">&amp;</span>
-                        <span className="rounded-lg bg-white border border-indigo-100 px-2.5 py-1 shadow-2xs">
+                        <span className="text-xs font-extrabold text-[#E0A928]">&amp;</span>
+                        <span className="rounded-lg bg-[#FFFDF8] px-3 py-1 shadow-xs">
                           {team.members[1]}
                         </span>
                       </div>
@@ -762,8 +767,9 @@ export default function ScheduleDetail({ code, onBack }) {
                   ))}
                 </div>
                 {schedule.reserve_players?.length > 0 && (
-                  <div className="text-xs text-slate-500">
-                    Menunggu pasangan: <strong>{schedule.reserve_players.join(', ')}</strong>
+                  <div className="text-xs text-[#EFE9DB]/80">
+                    Menunggu pasangan mandan:{' '}
+                    <strong className="text-[#E0A928]">{schedule.reserve_players.join(', ')}</strong>
                   </div>
                 )}
               </div>
@@ -771,16 +777,18 @@ export default function ScheduleDetail({ code, onBack }) {
           </div>
 
           {/* RSVP Section */}
-          <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm space-y-5">
+          <div className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-emerald-600" />
-                <h2 className="text-base font-bold text-slate-900">Konfirmasi Kehadiran (RSVP)</h2>
+                <Users className="h-5 w-5 text-[#B83A2D]" />
+                <h2 className="text-base font-extrabold text-[#3E2723]">
+                  Konfirmasi Kehadiran (RSVP)
+                </h2>
               </div>
               {myRsvp && (
-                <span className="text-xs text-slate-500">
-                  Status Anda:{' '}
-                  <strong className="text-slate-800">
+                <span className="text-xs text-[#7A5C52]">
+                  Status tersimpan:{' '}
+                  <strong className="text-[#3E2723]">
                     {myRsvp.status === 'attending'
                       ? 'Hadir'
                       : myRsvp.status === 'maybe'
@@ -801,10 +809,10 @@ export default function ScheduleDetail({ code, onBack }) {
                       setSelectedRsvpStatus('attending');
                       setRsvpFeedback(null);
                     }}
-                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'attending'
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed'
+                        ? 'border-[#3E2723] bg-[#3E2723] text-[#E0A928] shadow-xs'
+                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB] disabled:opacity-40 disabled:cursor-not-allowed'
                     }`}
                   >
                     <CheckCircle2 className="h-4 w-4" />
@@ -818,10 +826,10 @@ export default function ScheduleDetail({ code, onBack }) {
                       setSelectedRsvpStatus('maybe');
                       setRsvpFeedback(null);
                     }}
-                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'maybe'
-                        ? 'border-amber-500 bg-amber-500 text-white shadow-xs'
-                        : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'
+                        ? 'border-[#E0A928] bg-[#E0A928] text-[#3E2723] shadow-xs'
+                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB]'
                     }`}
                   >
                     <HelpCircle className="h-4 w-4" /> Belum Pasti
@@ -834,10 +842,10 @@ export default function ScheduleDetail({ code, onBack }) {
                       setSelectedRsvpStatus('declined');
                       setRsvpFeedback(null);
                     }}
-                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-semibold transition ${
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'declined'
-                        ? 'border-rose-600 bg-rose-600 text-white shadow-xs'
-                        : 'border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100'
+                        ? 'border-[#B83A2D] bg-[#B83A2D] text-[#FFFDF8] shadow-xs'
+                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB]'
                     }`}
                   >
                     <XCircle className="h-4 w-4" /> Tidak Hadir
@@ -848,17 +856,17 @@ export default function ScheduleDetail({ code, onBack }) {
                   type="button"
                   disabled={submitting || !selectedRsvpStatus}
                   onClick={handleRsvp}
-                  className="w-full rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold text-white shadow-xs hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  className="w-full rounded-xl bg-[#B83A2D] py-3.5 px-4 text-sm font-extrabold text-[#FFFDF8] shadow-sm hover:bg-[#982D22] disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
                   {submitting ? 'Menyimpan...' : 'Simpan Konfirmasi Kehadiran'}
                 </button>
 
                 {rsvpFeedback && (
                   <div
-                    className={`rounded-xl border px-3.5 py-2.5 text-xs font-medium ${
+                    className={`rounded-xl border px-3.5 py-2.5 text-xs font-bold ${
                       rsvpFeedback.type === 'success'
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                        : 'bg-rose-50 border-rose-200 text-rose-700'
+                        ? 'bg-[#E0A928]/25 border-[#E0A928] text-[#3E2723]'
+                        : 'bg-[#FAE6E3] border-[#B83A2D]/35 text-[#B83A2D]'
                     }`}
                   >
                     {rsvpFeedback.text}
@@ -869,54 +877,54 @@ export default function ScheduleDetail({ code, onBack }) {
 
             {/* Attendee Lists */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              <div className="rounded-xl bg-emerald-50/60 border border-emerald-100 p-3.5">
-                <div className="text-xs font-bold text-emerald-800 mb-2">
+              <div className="rounded-xl bg-[#FAF6EE] border border-[#DDD2BC] p-3.5">
+                <div className="text-xs font-extrabold text-[#3E2723] mb-2">
                   Hadir ({attendingList.length})
                 </div>
                 {attendingList.length === 0 ? (
-                  <p className="text-xs text-slate-400">Belum ada</p>
+                  <p className="text-xs text-[#7A5C52]">Belum ada</p>
                 ) : (
                   <ul className="space-y-1.5">
                     {attendingList.map((r) => (
-                      <li key={r.id} className="text-xs text-slate-800">
-                        <span className="font-semibold">{r.participant_name}</span>
-                        {r.note && <span className="text-slate-500"> — {r.note}</span>}
+                      <li key={r.id} className="text-xs text-[#3E2723]">
+                        <span className="font-bold">{r.participant_name}</span>
+                        {r.note && <span className="text-[#7A5C52]"> — {r.note}</span>}
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
 
-              <div className="rounded-xl bg-amber-50/60 border border-amber-100 p-3.5">
-                <div className="text-xs font-bold text-amber-800 mb-2">
+              <div className="rounded-xl bg-[#E0A928]/15 border border-[#E0A928]/40 p-3.5">
+                <div className="text-xs font-extrabold text-[#3E2723] mb-2">
                   Belum Pasti ({maybeList.length})
                 </div>
                 {maybeList.length === 0 ? (
-                  <p className="text-xs text-slate-400">Belum ada</p>
+                  <p className="text-xs text-[#7A5C52]">Belum ada</p>
                 ) : (
                   <ul className="space-y-1.5">
                     {maybeList.map((r) => (
-                      <li key={r.id} className="text-xs text-slate-800">
-                        <span className="font-semibold">{r.participant_name}</span>
-                        {r.note && <span className="text-slate-500"> — {r.note}</span>}
+                      <li key={r.id} className="text-xs text-[#3E2723]">
+                        <span className="font-bold">{r.participant_name}</span>
+                        {r.note && <span className="text-[#7A5C52]"> — {r.note}</span>}
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
 
-              <div className="rounded-xl bg-rose-50/60 border border-rose-100 p-3.5">
-                <div className="text-xs font-bold text-rose-800 mb-2">
+              <div className="rounded-xl bg-[#FAE6E3]/60 border border-[#B83A2D]/25 p-3.5">
+                <div className="text-xs font-extrabold text-[#B83A2D] mb-2">
                   Tidak Hadir ({declinedList.length})
                 </div>
                 {declinedList.length === 0 ? (
-                  <p className="text-xs text-slate-400">Belum ada</p>
+                  <p className="text-xs text-[#7A5C52]">Belum ada</p>
                 ) : (
                   <ul className="space-y-1.5">
                     {declinedList.map((r) => (
-                      <li key={r.id} className="text-xs text-slate-800">
-                        <span className="font-semibold">{r.participant_name}</span>
-                        {r.note && <span className="text-slate-500"> — {r.note}</span>}
+                      <li key={r.id} className="text-xs text-[#3E2723]">
+                        <span className="font-bold">{r.participant_name}</span>
+                        {r.note && <span className="text-[#7A5C52]"> — {r.note}</span>}
                       </li>
                     ))}
                   </ul>
@@ -927,25 +935,28 @@ export default function ScheduleDetail({ code, onBack }) {
         </div>
 
         {/* Activity & Notification Feed */}
-        <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm h-fit space-y-4">
+        <div className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs h-fit space-y-4">
           <div className="flex items-center gap-2">
-            <History className="h-5 w-5 text-slate-600" />
-            <h2 className="text-base font-bold text-slate-900">Aktivitas & Perubahan</h2>
+            <History className="h-5 w-5 text-[#B83A2D]" />
+            <h2 className="text-base font-extrabold text-[#3E2723]">Kabar Meja & Aktivitas</h2>
           </div>
 
           {schedule.activity_logs.length === 0 ? (
-            <p className="text-xs text-slate-400">Belum ada aktivitas.</p>
+            <p className="text-xs text-[#7A5C52]">Belum ada aktivitas.</p>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
               {schedule.activity_logs.map((log) => (
-                <div key={log.id} className="flex gap-2.5 text-xs border-b border-slate-100 pb-2.5 last:border-0">
-                  <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                <div
+                  key={log.id}
+                  className="flex gap-2.5 text-xs border-b border-[#EFE9DB] pb-2.5 last:border-0"
+                >
+                  <Clock className="h-3.5 w-3.5 text-[#B83A2D] shrink-0 mt-0.5" />
                   <div>
                     <div>
-                      <span className="font-semibold text-slate-800">{log.actor_name}</span>{' '}
-                      <span className="text-slate-600">{log.message}</span>
+                      <span className="font-bold text-[#3E2723]">{log.actor_name}</span>{' '}
+                      <span className="text-[#5D4037]">{log.message}</span>
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
+                    <div className="text-[11px] text-[#7A5C52] mt-0.5">
                       {formatShortDateID(
                         log.created_at?.endsWith('Z') ? log.created_at : `${log.created_at}Z`
                       )}
