@@ -38,6 +38,7 @@ db.exec(`
     location_address TEXT DEFAULT '',
     location_maps_url TEXT DEFAULT '',
     quota INTEGER NOT NULL DEFAULT 4,
+    teams_json TEXT DEFAULT NULL,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   );
@@ -83,5 +84,11 @@ db.exec(`
     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
   );
 `);
+
+// Safe migration for existing databases without teams_json column
+const scheduleCols = db.prepare('PRAGMA table_info(schedules)').all();
+if (!scheduleCols.some((col) => col.name === 'teams_json')) {
+  db.exec('ALTER TABLE schedules ADD COLUMN teams_json TEXT DEFAULT NULL');
+}
 
 export default db;

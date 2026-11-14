@@ -37,6 +37,83 @@ function logActivity(scheduleId, actorName, actionType, message) {
   ).run(scheduleId, actorName, actionType, message);
 }
 
+function buildMandanTeams(names) {
+  const shuffled = [...names];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(0, i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const teams = [];
+  const pairCount = Math.floor(shuffled.length / 2);
+  for (let i = 0; i < pairCount; i++) {
+    teams.push({
+      team_number: i + 1,
+      members: [shuffled[i * 2], shuffled[i * 2 + 1]],
+    });
+  }
+  const reserve = shuffled.length % 2 === 1 ? [shuffled[shuffled.length - 1]] : [];
+  return { teams, reserve };
+}
+
+function syncMandanTeams(scheduleId, currentTeamsJson, actorName = 'Sistem', forceShuffle = false) {
+  const attendingRows = db
+    .prepare("SELECT participant_name FROM rsvps WHERE schedule_id = ? AND status = 'attending' ORDER BY id ASC")
+    .all(scheduleId);
+  const attendingNames = attendingRows.map((r) => r.participant_name);
+
+  if (attendingNames.length < 4) {
+    if (currentTeamsJson) {
+      db.prepare("UPDATE schedules SET teams_json = NULL, updated_at = datetime('now') WHERE id = ?").run(
+        scheduleId
+      );
+      logActivity(
+        scheduleId,
+        'Sistem',
+        'updated',
+        'Pembagian mandan direset karena jumlah pemain hadir kurang dari 4 orang.'
+      );
+    }
+    return;
+  }
+
+  let needsUpdate = forceShuffle || !currentTeamsJson;
+  if (!needsUpdate && currentTeamsJson) {
+    try {
+      const parsed = JSON.parse(currentTeamsJson);
+      const existingSet = new Set([
+        ...(parsed.teams || []).flatMap((t) => t.members || []),
+        ...(parsed.reserve || []),
+      ].map((n) => n.toLowerCase()));
+      const currentSet = new Set(attendingNames.map((n) => n.toLowerCase()));
+      if (
+        existingSet.size !== currentSet.size ||
+        [...currentSet].some((n) => !existingSet.has(n))
+      ) {
+        needsUpdate = true;
+      }
+    } catch {
+      needsUpdate = true;
+    }
+  }
+
+  if (needsUpdate) {
+    const result = buildMandanTeams(attendingNames);
+    db.prepare("UPDATE schedules SET teams_json = ?, updated_at = datetime('now') WHERE id = ?").run(
+      JSON.stringify(result),
+      scheduleId
+    );
+    const summary = result.teams
+      .map((t) => `Tim ${t.team_number}: ${t.members.join(' & ')}`)
+      .join(' | ');
+    logActivity(
+      scheduleId,
+      forceShuffle ? actorName : 'Sistem',
+      'updated',
+      forceShuffle ? `Mengacak ulang mandan: ${summary}` : `Mandan otomatis terpilih (${summary}).`
+    );
+  }
+}
+
 function formatScheduleDetail(schedule, hostToken) {
   if (!schedule) return null;
   const options = db
@@ -74,9 +151,19 @@ function formatScheduleDetail(schedule, hostToken) {
     )
     .all(schedule.id);
 
-  const { host_token, ...safeSchedule } = schedule;
+  const { host_token, teams_json, ...safeSchedule } = schedule;
+  let parsedTeams = { teams: [], reserve: [] };
+  if (teams_json) {
+    try {
+      parsedTeams = JSON.parse(teams_json);
+    } catch {
+      parsedTeams = { teams: [], reserve: [] };
+    }
+  }
   return {
     ...safeSchedule,
+    teams: parsedTeams.teams || [],
+    reserve_players: parsedTeams.reserve || [],
     is_host: Boolean(hostToken && hostToken === host_token),
     poll_options: enrichedOptions,
     rsvps,
@@ -436,6 +523,33 @@ app.post('/api/schedules/:code/rsvp', (req, res) => {
   };
   logActivity(schedule.id, cleanName, 'rsvp', `Konfirmasi kehadiran: ${labelMap[status]}.`);
 
+  syncMandanTeams(schedule.id, schedule.teams_json);
+
+  const updated = db.prepare('SELECT * FROM schedules WHERE id = ?').get(schedule.id);
+  res.json(formatScheduleDetail(updated, hostToken));
+});
+
+// Shuffle mandan teams manually (host-only)
+app.post('/api/schedules/:code/shuffle-teams', (req, res) => {
+  const code = req.params.code.trim().toUpperCase();
+  const hostToken = req.headers['x-host-token'] || req.body?.host_token || '';
+  const schedule = db.prepare('SELECT * FROM schedules WHERE code = ?').get(code);
+
+  if (!schedule) {
+    return res.status(404).json({ error: 'Jadwal tidak ditemukan.' });
+  }
+  if (!hostToken || hostToken !== schedule.host_token) {
+    return res.status(403).json({ error: 'Hanya pembuat jadwal yang dapat mengacak ulang mandan.' });
+  }
+
+  const attendingCount = db
+    .prepare("SELECT COUNT(*) AS cnt FROM rsvps WHERE schedule_id = ? AND status = 'attending'")
+    .get(schedule.id).cnt;
+  if (attendingCount < 4) {
+    return res.status(400).json({ error: 'Minimal 4 pemain hadir diperlukan untuk memilih mandan.' });
+  }
+
+  syncMandanTeams(schedule.id, schedule.teams_json, schedule.creator_name, true);
   const updated = db.prepare('SELECT * FROM schedules WHERE id = ?').get(schedule.id);
   res.json(formatScheduleDetail(updated, hostToken));
 });

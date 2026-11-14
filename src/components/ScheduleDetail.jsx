@@ -13,6 +13,7 @@ import {
   MapPin,
   Share2,
   ShieldCheck,
+  Shuffle,
   Users,
   Vote,
   XCircle,
@@ -97,11 +98,20 @@ export default function ScheduleDetail({ code, onBack }) {
         ? 'Sedang Voting Waktu'
         : formatDateTimeID(schedule.final_start_at);
     const locText = schedule.location_name || 'Belum ditentukan';
+    const teamLines =
+      schedule.teams?.length > 0
+        ? [
+            '',
+            '*Pembagian Mandan:*',
+            ...schedule.teams.map((t) => `• Tim ${t.team_number}: ${t.members.join(' & ')}`),
+          ]
+        : [];
     const msg = [
       `*Ayo Main Koa! — ${schedule.title}*`,
       `Kode: ${schedule.code}`,
       `Waktu: ${timeText}`,
       `Lokasi: ${locText}`,
+      ...teamLines,
       '',
       `Klik link ini untuk ikut / konfirmasi hadir:`,
       shareUrl,
@@ -206,6 +216,19 @@ export default function ScheduleDetail({ code, onBack }) {
         status: newStatus,
         actor_name: playerName.trim() || schedule.creator_name,
       });
+      setSchedule(updated);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleShuffleTeams = async () => {
+    setActionError('');
+    setSubmitting(true);
+    try {
+      const updated = await api.shuffleTeams(code);
       setSchedule(updated);
     } catch (err) {
       setActionError(err.message);
@@ -667,6 +690,65 @@ export default function ScheduleDetail({ code, onBack }) {
               </div>
             </div>
           )}
+
+          {/* Mandan / Pembagian Tim Otomatis */}
+          <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Shuffle className="h-5 w-5 text-indigo-600" />
+                <h2 className="text-base font-bold text-slate-900">
+                  Pembagian Mandan (2 Orang / Tim)
+                </h2>
+              </div>
+              {schedule.is_host && !isLocked && schedule.teams?.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleShuffleTeams}
+                  disabled={submitting}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                >
+                  <Shuffle className="h-3.5 w-3.5" /> Acak Ulang Mandan
+                </button>
+              )}
+            </div>
+
+            {!schedule.teams?.length ? (
+              <div className="rounded-xl bg-slate-50 border border-dashed border-slate-200 px-4 py-3 text-xs text-slate-500">
+                Mandan akan otomatis dipilihkan (2 orang per tim) begitu sudah ada{' '}
+                <strong>4 pemain</strong> yang konfirmasi <strong>Hadir</strong> (saat ini{' '}
+                {attendingList.length}/4).
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {schedule.teams.map((team) => (
+                    <div
+                      key={team.team_number}
+                      className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3.5"
+                    >
+                      <div className="text-xs font-bold uppercase tracking-wide text-indigo-700 mb-2">
+                        Tim {team.team_number} (Mandan)
+                      </div>
+                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                        <span className="rounded-lg bg-white border border-indigo-100 px-2.5 py-1 shadow-2xs">
+                          {team.members[0]}
+                        </span>
+                        <span className="text-xs font-bold text-indigo-400">&amp;</span>
+                        <span className="rounded-lg bg-white border border-indigo-100 px-2.5 py-1 shadow-2xs">
+                          {team.members[1]}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {schedule.reserve_players?.length > 0 && (
+                  <div className="text-xs text-slate-500">
+                    Menunggu pasangan: <strong>{schedule.reserve_players.join(', ')}</strong>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* RSVP Section */}
           <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm space-y-5">
