@@ -5,9 +5,12 @@ import {
   Hash,
   History,
   Info,
+  LogOut,
   MapPin,
   Plus,
   Search,
+  ShieldCheck,
+  Trash2,
   Users,
   Vote,
 } from 'lucide-react';
@@ -18,15 +21,22 @@ import ScheduleDetail from './components/ScheduleDetail';
 import LocationsTab from './components/LocationsTab';
 import HistoryStatsTab from './components/HistoryStatsTab';
 import InfoTab from './components/InfoTab';
-import { formatDateTimeID } from './utils/storage';
+import AdminLoginPage from './components/AdminLoginPage';
+import { clearAdminToken, formatDateTimeID, getAdminToken } from './utils/storage';
 
 function parseCodeFromPath() {
   const match = window.location.pathname.match(/^\/s\/([^/]+)$/i);
   return match ? decodeURIComponent(match[1]).toUpperCase() : null;
 }
 
+function isAdminPath() {
+  return window.location.pathname.toLowerCase() === '/admin';
+}
+
 export default function App() {
   const [activeCode, setActiveCode] = useState(parseCodeFromPath);
+  const [showAdminLogin, setShowAdminLogin] = useState(isAdminPath);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState('schedules');
   const [schedules, setSchedules] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -38,9 +48,21 @@ export default function App() {
   useEffect(() => {
     const onPopState = () => {
       setActiveCode(parseCodeFromPath());
+      setShowAdminLogin(isAdminPath());
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  useEffect(() => {
+    if (!getAdminToken()) return;
+    api
+      .adminCheck()
+      .then((res) => setIsAdmin(Boolean(res?.is_admin)))
+      .catch(() => {
+        clearAdminToken();
+        setIsAdmin(false);
+      });
   }, []);
 
   const loadSchedules = async () => {
@@ -57,21 +79,46 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!activeCode && activeTab === 'schedules') {
+    if (!activeCode && !showAdminLogin && activeTab === 'schedules') {
       loadSchedules();
     }
-  }, [activeCode, activeTab, statusFilter]);
+  }, [activeCode, showAdminLogin, activeTab, statusFilter]);
 
   const navigateToSchedule = (code) => {
     const upper = code.trim().toUpperCase();
     if (!upper) return;
     window.history.pushState({}, '', `/s/${upper}`);
+    setShowAdminLogin(false);
     setActiveCode(upper);
   };
 
   const navigateHome = () => {
     window.history.pushState({}, '', '/');
+    setShowAdminLogin(false);
     setActiveCode(null);
+  };
+
+  const navigateToAdminLogin = () => {
+    window.history.pushState({}, '', '/admin');
+    setActiveCode(null);
+    setShowAdminLogin(true);
+  };
+
+  const handleAdminLogout = () => {
+    clearAdminToken();
+    setIsAdmin(false);
+  };
+
+  const handleAdminQuickDelete = async (e, s) => {
+    e.stopPropagation();
+    const ok = window.confirm(`Hapus jadwal "${s.title}" (${s.code}) secara permanen?`);
+    if (!ok) return;
+    try {
+      await api.deleteSchedule(s.code);
+      loadSchedules();
+    } catch (err) {
+      alert(err.message || 'Gagal menghapus jadwal.');
+    }
   };
 
   const handleJoinSubmit = (e) => {
@@ -115,7 +162,7 @@ export default function App() {
           </button>
 
           <div className="flex items-center gap-2">
-            {!activeCode && (
+            {!activeCode && !showAdminLogin && (
               <nav className="hidden sm:flex items-center gap-1 mr-2 rounded-xl bg-[#EFE9DB] p-1 border border-[#DDD2BC]">
                 <button
                   onClick={() => setActiveTab('schedules')}
@@ -160,9 +207,31 @@ export default function App() {
               </nav>
             )}
 
+            {isAdmin ? (
+              <button
+                onClick={handleAdminLogout}
+                title="Keluar dari Mode Admin"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#E0A928] bg-[#3E2723] px-3 py-2 text-xs font-bold text-[#E0A928] hover:bg-[#5D4037] transition"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Admin</span>
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              !showAdminLogin && (
+                <button
+                  onClick={navigateToAdminLogin}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-xs font-bold text-[#3E2723] hover:bg-[#EFE9DB] transition"
+                >
+                  <ShieldCheck className="h-4 w-4 text-[#B83A2D]" />
+                  <span>Login Admin</span>
+                </button>
+              )
+            )}
+
             <button
               onClick={() => setShowCreate(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#B83A2D] px-4 py-2.5 text-xs sm:text-sm font-bold text-[#FFFDF8] shadow-sm hover:bg-[#982D22] active:scale-[0.98] transition"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#B83A2D] px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold text-[#FFFDF8] shadow-sm hover:bg-[#982D22] active:scale-[0.98] transition"
             >
               <Plus className="h-4 w-4" /> Buat Jadwal
             </button>
@@ -172,7 +241,15 @@ export default function App() {
 
       {/* Main Content */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-24 sm:py-7">
-        {activeCode ? (
+        {showAdminLogin ? (
+          <AdminLoginPage
+            onBack={navigateHome}
+            onSuccess={() => {
+              setIsAdmin(true);
+              navigateHome();
+            }}
+          />
+        ) : activeCode ? (
           <ScheduleDetail code={activeCode} onBack={navigateHome} />
         ) : activeTab === 'locations' ? (
           <LocationsTab />
@@ -225,6 +302,24 @@ export default function App() {
                 </form>
               </div>
             </div>
+
+            {/* Admin Mode Banner */}
+            {isAdmin && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#3E2723] border border-[#E0A928] px-4 py-3 text-xs text-[#EFE9DB] shadow-xs">
+                <div className="flex items-center gap-2 font-bold">
+                  <ShieldCheck className="h-4 w-4 text-[#E0A928]" />
+                  <span>
+                    Mode Admin Aktif — Anda dapat menambah, mengedit, dan menghapus seluruh jadwal meja.
+                  </span>
+                </div>
+                <button
+                  onClick={handleAdminLogout}
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#E0A928] px-3 py-1 font-extrabold text-[#3E2723] hover:bg-[#C48F17]"
+                >
+                  <LogOut className="h-3.5 w-3.5" /> Logout Admin
+                </button>
+              </div>
+            )}
 
             {/* Filter Pills */}
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -340,9 +435,21 @@ export default function App() {
                         {s.attending_count}
                         {s.quota > 0 ? `/${s.quota}` : ''} Pemain Hadir
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-lg bg-[#EFE9DB] group-hover:bg-[#B83A2D] group-hover:text-[#FFFDF8] px-3 py-1 font-bold text-[#3E2723] transition">
-                        Ikut / Buka Meja →
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleAdminQuickDelete(e, s)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-[#FAE6E3] border border-[#B83A2D]/30 px-2.5 py-1 font-bold text-[#B83A2D] hover:bg-[#B83A2D] hover:text-[#FFFDF8] transition"
+                            title="Hapus jadwal ini"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Hapus
+                          </button>
+                        )}
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-[#EFE9DB] group-hover:bg-[#B83A2D] group-hover:text-[#FFFDF8] px-3 py-1 font-bold text-[#3E2723] transition">
+                          {isAdmin ? 'Kelola / Edit →' : 'Ikut / Buka Meja →'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -353,7 +460,7 @@ export default function App() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      {!activeCode && (
+      {!activeCode && !showAdminLogin && (
         <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#DDD2BC] bg-[#FAF6EE]/95 backdrop-blur-md">
           <div className="grid grid-cols-4 h-16">
             <button

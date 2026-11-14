@@ -1,11 +1,13 @@
-import { getHostTokenForCode } from './utils/storage';
+import { getAdminToken, getHostTokenForCode } from './utils/storage';
 
 async function request(url, options = {}) {
   const { headers: customHeaders, ...restOptions } = options;
+  const adminToken = getAdminToken();
   const res = await fetch(url, {
     ...restOptions,
     headers: {
       'Content-Type': 'application/json',
+      ...(adminToken ? { 'x-admin-token': adminToken } : {}),
       ...(customHeaders || {}),
     },
   });
@@ -87,4 +89,12 @@ export const api = {
     }),
 
   getStats: () => request('/api/stats'),
+
+  adminLogin: (payload) =>
+    request('/api/admin/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  adminCheck: () => request('/api/admin/me'),
 };

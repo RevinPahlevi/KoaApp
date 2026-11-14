@@ -10,6 +10,40 @@ app.use(express.json({ type: ['application/json', 'text/plain'] }));
 
 const nowIso = () => new Date().toISOString();
 
+const ADMIN_USER = process.env.ADMIN_USERNAME || 'adminkoa14';
+const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'adminkoacuy14';
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'koaplay-lapau-secret-key-2026';
+
+function createAdminToken(username) {
+  const payload = Buffer.from(
+    JSON.stringify({ role: 'admin', username, iat: Date.now() })
+  ).toString('base64url');
+  const sig = crypto.createHmac('sha256', ADMIN_SECRET).update(payload).digest('hex');
+  return `${payload}.${sig}`;
+}
+
+function verifyAdminToken(token) {
+  if (!token || typeof token !== 'string' || !token.includes('.')) return null;
+  const [payload, sig] = token.split('.');
+  if (!payload || !sig) return null;
+  const expected = crypto.createHmac('sha256', ADMIN_SECRET).update(payload).digest('hex');
+  try {
+    const a = Buffer.from(sig, 'hex');
+    const b = Buffer.from(expected, 'hex');
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (data?.role !== 'admin') return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function isAdminRequest(req) {
+  const token = req.headers['x-admin-token'] || '';
+  return Boolean(verifyAdminToken(token));
+}
+
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let suffix = '';
@@ -116,7 +150,7 @@ async function syncMandanTeams(scheduleId, currentTeamsJson, actorName = 'Sistem
   }
 }
 
-async function formatScheduleDetail(schedule, hostToken) {
+async function formatScheduleDetail(schedule, hostToken, isAdmin = false) {
   if (!schedule) return null;
   const options = await queryAll(
     'SELECT id, start_at, end_at, note FROM poll_options WHERE schedule_id = ? ORDER BY start_at ASC',
@@ -166,12 +200,32 @@ async function formatScheduleDetail(schedule, hostToken) {
     ...safeSchedule,
     teams: parsedTeams.teams || [],
     reserve_players: parsedTeams.reserve || [],
-    is_host: Boolean(hostToken && hostToken === host_token),
+    is_host: Boolean((hostToken && hostToken === host_token) || isAdmin),
+    is_admin: Boolean(isAdmin),
     poll_options: enrichedOptions,
     rsvps,
     activity_logs: logs,
   };
 }
+
+// Admin authentication
+app.post('/api/admin/login', (req, res) => {
+  const { username = '', password = '' } = req.body || {};
+  if (username.trim() !== ADMIN_USER || password !== ADMIN_PASS) {
+    return res.status(401).json({ error: 'Username atau password admin salah.' });
+  }
+  const token = createAdminToken(ADMIN_USER);
+  res.json({ token, username: ADMIN_USER });
+});
+
+app.get('/api/admin/me', (req, res) => {
+  const token = req.headers['x-admin-token'] || '';
+  const data = verifyAdminToken(token);
+  if (!data) {
+    return res.status(401).json({ is_admin: false });
+  }
+  res.json({ is_admin: true, username: data.username });
+});
 
 // List all schedules with summary counts
 app.get('/api/schedules', async (req, res) => {
@@ -214,11 +268,12 @@ app.get('/api/schedules', async (req, res) => {
 app.get('/api/schedules/:code', async (req, res) => {
   const code = req.params.code.trim().toUpperCase();
   const hostToken = req.headers['x-host-token'] || req.query.hostToken || '';
+  const isAdmin = isAdminRequest(req);
   const schedule = await queryOne('SELECT * FROM schedules WHERE code = ?', [code]);
   if (!schedule) {
     return res.status(404).json({ error: 'Jadwal tidak ditemukan. Periksa kembali kode jadwal.' });
   }
-  res.json(await formatScheduleDetail(schedule, hostToken));
+  res.json(await formatScheduleDetail(schedule, hostToken, isAdmin));
 });
 
 // Create a new schedule (no login required)
@@ -344,19 +399,20 @@ app.post('/api/schedules', async (req, res) => {
   });
 });
 
-// Update / finalize / cancel / complete schedule (host_token required)
+// Update / finalize / cancel / complete schedule (host_token or admin required)
 app.patch('/api/schedules/:code', async (req, res) => {
   const code = req.params.code.trim().toUpperCase();
-  const hostToken = req.headers['x-host-token'] || req.body.host_token || '';
+  const hostToken = req.headers['x-host-token'] || req.body?.host_token || '';
+  const isAdmin = isAdminRequest(req);
   const schedule = await queryOne('SELECT * FROM schedules WHERE code = ?', [code]);
 
   if (!schedule) {
     return res.status(404).json({ error: 'Jadwal tidak ditemukan.' });
   }
-  if (!hostToken || hostToken !== schedule.host_token) {
+  if (!isAdmin && (!hostToken || hostToken !== schedule.host_token)) {
     return res
       .status(403)
-      .json({ error: 'Hanya pembuat jadwal (memiliki akses Host) yang dapat mengubah jadwal ini.' });
+      .json({ error: 'Hanya pembuat jadwal atau Admin yang dapat mengubah jadwal ini.' });
   }
 
   const {
@@ -431,7 +487,7 @@ app.patch('/api/schedules/:code', async (req, res) => {
   await logActivity(schedule.id, actor_name, actionType, logMessage);
 
   const updated = await queryOne('SELECT * FROM schedules WHERE id = ?', [schedule.id]);
-  res.json(await formatScheduleDetail(updated, hostToken));
+  res.json(await formatScheduleDetail(updated, hostToken, isAdmin));
 });
 
 // Vote on poll options (no login, participant_name based)
@@ -486,7 +542,7 @@ app.post('/api/schedules/:code/vote', async (req, res) => {
   );
 
   const updated = await queryOne('SELECT * FROM schedules WHERE id = ?', [schedule.id]);
-  res.json(await formatScheduleDetail(updated, hostToken));
+  res.json(await formatScheduleDetail(updated, hostToken, isAdminRequest(req)));
 });
 
 // RSVP / Attendance confirmation (no login, participant_name based)
@@ -556,20 +612,23 @@ app.post('/api/schedules/:code/rsvp', async (req, res) => {
   await syncMandanTeams(schedule.id, schedule.teams_json);
 
   const updated = await queryOne('SELECT * FROM schedules WHERE id = ?', [schedule.id]);
-  res.json(await formatScheduleDetail(updated, hostToken));
+  res.json(await formatScheduleDetail(updated, hostToken, isAdminRequest(req)));
 });
 
-// Shuffle mandan teams manually (host-only)
+// Shuffle mandan teams manually (host or admin)
 app.post('/api/schedules/:code/shuffle-teams', async (req, res) => {
   const code = req.params.code.trim().toUpperCase();
   const hostToken = req.headers['x-host-token'] || req.body?.host_token || '';
+  const isAdmin = isAdminRequest(req);
   const schedule = await queryOne('SELECT * FROM schedules WHERE code = ?', [code]);
 
   if (!schedule) {
     return res.status(404).json({ error: 'Jadwal tidak ditemukan.' });
   }
-  if (!hostToken || hostToken !== schedule.host_token) {
-    return res.status(403).json({ error: 'Hanya pembuat jadwal yang dapat mengacak ulang mandan.' });
+  if (!isAdmin && (!hostToken || hostToken !== schedule.host_token)) {
+    return res
+      .status(403)
+      .json({ error: 'Hanya pembuat jadwal atau Admin yang dapat mengacak ulang mandan.' });
   }
 
   const countRow = await queryOne(
@@ -580,24 +639,25 @@ app.post('/api/schedules/:code/shuffle-teams', async (req, res) => {
     return res.status(400).json({ error: 'Minimal 4 pemain hadir diperlukan untuk memilih mandan.' });
   }
 
-  await syncMandanTeams(schedule.id, schedule.teams_json, schedule.creator_name, true);
+  await syncMandanTeams(schedule.id, schedule.teams_json, isAdmin ? 'Admin' : schedule.creator_name, true);
   const updated = await queryOne('SELECT * FROM schedules WHERE id = ?', [schedule.id]);
-  res.json(await formatScheduleDetail(updated, hostToken));
+  res.json(await formatScheduleDetail(updated, hostToken, isAdmin));
 });
 
-// Delete schedule permanently (host-only)
+// Delete schedule permanently (host or admin)
 app.delete('/api/schedules/:code', async (req, res) => {
   const code = req.params.code.trim().toUpperCase();
   const hostToken = req.headers['x-host-token'] || req.body?.host_token || '';
+  const isAdmin = isAdminRequest(req);
   const schedule = await queryOne('SELECT * FROM schedules WHERE code = ?', [code]);
 
   if (!schedule) {
     return res.status(404).json({ error: 'Jadwal tidak ditemukan.' });
   }
-  if (!hostToken || hostToken !== schedule.host_token) {
+  if (!isAdmin && (!hostToken || hostToken !== schedule.host_token)) {
     return res
       .status(403)
-      .json({ error: 'Hanya pembuat jadwal yang dapat menghapus jadwal ini.' });
+      .json({ error: 'Hanya pembuat jadwal atau Admin yang dapat menghapus jadwal ini.' });
   }
 
   await execute('DELETE FROM schedules WHERE id = ?', [schedule.id]);

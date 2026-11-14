@@ -1,5 +1,20 @@
 const PLAYER_NAME_KEY = 'koaplay_player_name';
 const HOST_TOKENS_KEY = 'koaplay_host_tokens';
+const ADMIN_TOKEN_KEY = 'koaplay_admin_token';
+
+export function getAdminToken() {
+  return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
+}
+
+export function saveAdminToken(token) {
+  if (token) {
+    localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  }
+}
+
+export function clearAdminToken() {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
 
 export function getSavedPlayerName() {
   return localStorage.getItem(PLAYER_NAME_KEY) || '';
