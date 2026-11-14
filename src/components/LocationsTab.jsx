@@ -71,7 +71,7 @@ export default function LocationsTab() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Nama tempat (cth: Warkop Maju)"
-            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
+            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
             required
           />
           <input
@@ -79,20 +79,20 @@ export default function LocationsTab() {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Alamat lengkap / patokan"
-            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
+            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
           />
           <input
             type="url"
             value={mapsUrl}
             onChange={(e) => setMapsUrl(e.target.value)}
             placeholder="Link Google Maps (opsional)"
-            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
+            className="rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
           />
         </div>
         <div className="flex justify-end">
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 sm:py-2 text-sm font-semibold text-white hover:bg-emerald-700"
           >
             <Plus className="h-4 w-4" /> Simpan Lokasi
           </button>

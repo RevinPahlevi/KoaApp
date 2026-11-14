@@ -306,10 +306,10 @@ export default function ScheduleDetail({ code, onBack }) {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex w-full sm:w-auto gap-2">
             <button
               onClick={() => copyText(shareUrl, 'link')}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 sm:py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               {copied === 'link' ? (
                 <>
@@ -323,7 +323,7 @@ export default function ScheduleDetail({ code, onBack }) {
             </button>
             <button
               onClick={shareToWhatsApp}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2.5 sm:py-2 text-xs font-semibold text-white hover:bg-emerald-700"
             >
               <Share2 className="h-4 w-4" /> Bagikan ke WA
             </button>
@@ -517,7 +517,7 @@ export default function ScheduleDetail({ code, onBack }) {
 
       {/* Player Identity Box (No Login Required) */}
       {!isLocked && (
-        <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
+        <div className="rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1">
               <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
@@ -528,7 +528,7 @@ export default function ScheduleDetail({ code, onBack }) {
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
                 placeholder="Ketik nama panggilan Anda, cth: Andi"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm font-medium focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
             <div className="flex-1">
@@ -540,7 +540,7 @@ export default function ScheduleDetail({ code, onBack }) {
                 value={rsvpNote}
                 onChange={(e) => setRsvpNote(e.target.value)}
                 placeholder="cth: Agak telat 15 menit"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
               />
             </div>
           </div>
@@ -690,7 +690,7 @@ export default function ScheduleDetail({ code, onBack }) {
             </div>
 
             {!isLocked && (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}

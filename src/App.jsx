@@ -79,7 +79,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <button
             onClick={() => {
               navigateHome();
@@ -136,46 +136,16 @@ export default function App() {
 
             <button
               onClick={() => setShowCreate(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 sm:px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-[0.98] transition"
             >
               <Plus className="h-4 w-4" /> Buat Jadwal
             </button>
           </div>
         </div>
-
-        {/* Mobile Nav */}
-        {!activeCode && (
-          <div className="flex sm:hidden border-t border-slate-100 px-4 py-2 gap-2 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('schedules')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
-                activeTab === 'schedules' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600'
-              }`}
-            >
-              Jadwal
-            </button>
-            <button
-              onClick={() => setActiveTab('locations')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
-                activeTab === 'locations' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600'
-              }`}
-            >
-              Lokasi
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
-                activeTab === 'history' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600'
-              }`}
-            >
-              Riwayat & Statistik
-            </button>
-          </div>
-        )}
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-24 sm:py-6">
         {activeCode ? (
           <ScheduleDetail code={activeCode} onBack={navigateHome} />
         ) : activeTab === 'locations' ? (
@@ -211,12 +181,12 @@ export default function App() {
                       value={joinCode}
                       onChange={(e) => setJoinCode(e.target.value)}
                       placeholder="Kode (cth: KOA-7X92)"
-                      className="w-full rounded-lg bg-transparent pl-9 pr-3 py-2 text-sm text-white placeholder:text-emerald-200/80 focus:outline-none uppercase"
+                      className="w-full rounded-lg bg-transparent pl-9 pr-3 py-2.5 sm:py-2 text-base sm:text-sm text-white placeholder:text-emerald-200/80 focus:outline-none uppercase"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-1 rounded-lg bg-white px-3.5 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50"
+                    className="inline-flex items-center gap-1 rounded-lg bg-white px-4 py-2.5 sm:py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50 active:scale-[0.98]"
                   >
                     <Search className="h-3.5 w-3.5" /> Buka
                   </button>
@@ -323,6 +293,41 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      {!activeCode && (
+        <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+          <div className="grid grid-cols-3 h-16">
+            <button
+              onClick={() => setActiveTab('schedules')}
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
+                activeTab === 'schedules' ? 'text-emerald-600' : 'text-slate-500'
+              }`}
+            >
+              <Calendar className="h-5 w-5" />
+              Jadwal
+            </button>
+            <button
+              onClick={() => setActiveTab('locations')}
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
+                activeTab === 'locations' ? 'text-emerald-600' : 'text-slate-500'
+              }`}
+            >
+              <MapPin className="h-5 w-5" />
+              Lokasi
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
+                activeTab === 'history' ? 'text-emerald-600' : 'text-slate-500'
+              }`}
+            >
+              <History className="h-5 w-5" />
+              Riwayat
+            </button>
+          </div>
+        </nav>
+      )}
 
       {showCreate && (
         <CreateScheduleModal

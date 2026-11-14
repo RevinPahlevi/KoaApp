@@ -111,9 +111,9 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-xl border border-slate-200">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 p-0 sm:p-4 backdrop-blur-xs">
+      <div className="w-full max-w-xl max-h-[92dvh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white shadow-xl border border-slate-200">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-5 sm:px-6 py-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Buat Jadwal Main Koa</h2>
             <p className="text-xs text-slate-500">Tanpa login — langsung bagikan link ke teman</p>
@@ -229,29 +229,31 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
                 </button>
               </div>
               {pollOptions.map((opt, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-xl bg-slate-50/70 sm:bg-transparent p-2.5 sm:p-0 border border-slate-200/70 sm:border-0">
                   <input
                     type="datetime-local"
                     value={opt.start_at}
                     onChange={(e) => updatePollOption(idx, 'start_at', e.target.value)}
-                    className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                    className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
                   />
-                  <input
-                    type="text"
-                    value={opt.note}
-                    onChange={(e) => updatePollOption(idx, 'note', e.target.value)}
-                    placeholder="Ket. (opsional)"
-                    className="w-36 rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                  />
-                  {pollOptions.length > 2 && (
-                    <button
-                      type="button"
-                      onClick={() => removePollOption(idx)}
-                      className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={opt.note}
+                      onChange={(e) => updatePollOption(idx, 'note', e.target.value)}
+                      placeholder="Ket. (opsional)"
+                      className="flex-1 sm:w-36 rounded-xl border border-slate-300 bg-white px-3 py-2 text-base sm:text-sm focus:border-emerald-500 focus:outline-none"
+                    />
+                    {pollOptions.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => removePollOption(idx)}
+                        className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
