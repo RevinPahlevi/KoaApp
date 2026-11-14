@@ -4,6 +4,7 @@ import {
   Coffee,
   Hash,
   History,
+  Info,
   MapPin,
   Plus,
   Search,
@@ -16,6 +17,7 @@ import CreateScheduleModal from './components/CreateScheduleModal';
 import ScheduleDetail from './components/ScheduleDetail';
 import LocationsTab from './components/LocationsTab';
 import HistoryStatsTab from './components/HistoryStatsTab';
+import InfoTab from './components/InfoTab';
 import { formatDateTimeID } from './utils/storage';
 
 function parseCodeFromPath() {
@@ -145,6 +147,16 @@ export default function App() {
                 >
                   Riwayat & Statistik
                 </button>
+                <button
+                  onClick={() => setActiveTab('info')}
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
+                    activeTab === 'info'
+                      ? 'bg-[#3E2723] text-[#EFE9DB] shadow-2xs'
+                      : 'text-[#5D4037] hover:text-[#3E2723]'
+                  }`}
+                >
+                  Info Aplikasi
+                </button>
               </nav>
             )}
 
@@ -166,6 +178,8 @@ export default function App() {
           <LocationsTab />
         ) : activeTab === 'history' ? (
           <HistoryStatsTab onSelectSchedule={navigateToSchedule} />
+        ) : activeTab === 'info' ? (
+          <InfoTab />
         ) : (
           <div className="space-y-6">
             {/* Hero / Quick Join */}
@@ -341,7 +355,7 @@ export default function App() {
       {/* Mobile Bottom Navigation */}
       {!activeCode && (
         <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#DDD2BC] bg-[#FAF6EE]/95 backdrop-blur-md">
-          <div className="grid grid-cols-3 h-16">
+          <div className="grid grid-cols-4 h-16">
             <button
               onClick={() => setActiveTab('schedules')}
               className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
@@ -358,7 +372,7 @@ export default function App() {
               }`}
             >
               <MapPin className="h-5 w-5" />
-              Lokasi Lapau
+              Lokasi
             </button>
             <button
               onClick={() => setActiveTab('history')}
@@ -368,6 +382,15 @@ export default function App() {
             >
               <History className="h-5 w-5" />
               Riwayat
+            </button>
+            <button
+              onClick={() => setActiveTab('info')}
+              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+                activeTab === 'info' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
+              }`}
+            >
+              <Info className="h-5 w-5" />
+              Info
             </button>
           </div>
         </nav>
