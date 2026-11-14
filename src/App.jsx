@@ -31,6 +31,7 @@ export default function App() {
   const [joinCode, setJoinCode] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const onPopState = () => {
@@ -42,9 +43,12 @@ export default function App() {
 
   const loadSchedules = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const data = await api.getSchedules(statusFilter);
       setSchedules(data);
+    } catch (err) {
+      setLoadError(err.message || 'Gagal memuat daftar jadwal.');
     } finally {
       setLoading(false);
     }
@@ -221,6 +225,10 @@ export default function App() {
             {/* Schedule Cards */}
             {loading ? (
               <div className="py-12 text-center text-sm text-slate-500">Memuat daftar jadwal...</div>
+            ) : loadError ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700">
+                {loadError}
+              </div>
             ) : schedules.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
                 <Calendar className="mx-auto h-10 w-10 text-slate-300 mb-3" />

@@ -188,7 +188,7 @@ app.get('/api/schedules', (req, res) => {
     query += ' WHERE s.status = ?';
     params.push(statusFilter);
   }
-  query += ' ORDER BY CASE s.status WHEN "scheduled" THEN 1 WHEN "polling" THEN 2 WHEN "completed" THEN 3 ELSE 4 END, COALESCE(s.final_start_at, s.created_at) DESC';
+  query += " ORDER BY CASE s.status WHEN 'scheduled' THEN 1 WHEN 'polling' THEN 2 WHEN 'completed' THEN 3 ELSE 4 END, COALESCE(s.final_start_at, s.created_at) DESC";
 
   const rows = db.prepare(query).all(...params);
   res.json(rows);
