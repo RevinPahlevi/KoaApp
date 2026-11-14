@@ -52,7 +52,7 @@ const DEVELOPERS = [
     name: 'Ervizon Fariz',
     role: 'System Analyst',
     photo: '/images/ervizon.jpeg',
-    imgClass: 'object-bottom',
+    imgClass: 'object-[center_36%]',
   },
 ];
 
