@@ -282,16 +282,34 @@ export default function App() {
                           <span>{s.location_name || 'Lokasi belum ditentukan'}</span>
                         </div>
                       </div>
+
+                      {s.attending_names?.length > 0 && (
+                        <div className="pt-1.5">
+                          <div className="text-[11px] font-medium text-slate-500 mb-1">
+                            Sudah bergabung:
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {s.attending_names.map((name, idx) => (
+                              <span
+                                key={`${name}-${idx}`}
+                                className="rounded-md bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 text-[11px] font-semibold text-emerald-800"
+                              >
+                                {name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-                      <span className="text-slate-500">
-                        Host: <strong className="text-slate-700">{s.creator_name}</strong>
-                      </span>
                       <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
                         <Users className="h-3.5 w-3.5" />
                         {s.attending_count}
                         {s.quota > 0 ? `/${s.quota}` : ''} Hadir
+                      </span>
+                      <span className="font-semibold text-emerald-700 group-hover:underline">
+                        Ikut / Lihat →
                       </span>
                     </div>
                   </div>

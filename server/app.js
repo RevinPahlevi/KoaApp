@@ -194,7 +194,20 @@ app.get('/api/schedules', async (req, res) => {
     " ORDER BY CASE s.status WHEN 'scheduled' THEN 1 WHEN 'polling' THEN 2 WHEN 'completed' THEN 3 ELSE 4 END, COALESCE(s.final_start_at, s.created_at) DESC";
 
   const rows = await queryAll(query, params);
-  res.json(rows);
+  const attendingRows = await queryAll(
+    "SELECT schedule_id, participant_name FROM rsvps WHERE status = 'attending' ORDER BY id ASC"
+  );
+  const namesBySchedule = new Map();
+  for (const r of attendingRows) {
+    const sid = Number(r.schedule_id);
+    if (!namesBySchedule.has(sid)) namesBySchedule.set(sid, []);
+    namesBySchedule.get(sid).push(r.participant_name);
+  }
+  const enriched = rows.map((row) => ({
+    ...row,
+    attending_names: namesBySchedule.get(Number(row.id)) || [],
+  }));
+  res.json(enriched);
 });
 
 // Get single schedule by code
