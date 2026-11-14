@@ -67,6 +67,14 @@ export const api = {
     });
   },
 
+  deleteSchedule: (code) => {
+    const token = getHostTokenForCode(code);
+    return request(`/api/schedules/${encodeURIComponent(code)}`, {
+      method: 'DELETE',
+      headers: token ? { 'x-host-token': token } : {},
+    });
+  },
+
   getLocations: () => request('/api/locations'),
   createLocation: (payload) =>
     request('/api/locations', {

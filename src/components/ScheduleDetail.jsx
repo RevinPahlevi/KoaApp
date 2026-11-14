@@ -14,6 +14,7 @@ import {
   Share2,
   ShieldCheck,
   Shuffle,
+  Trash2,
   Users,
   Vote,
   XCircle,
@@ -26,6 +27,7 @@ import {
   getHostTokenForCode,
   getNowLocalDateTimeInput,
   getSavedPlayerName,
+  removeHostToken,
   saveHostToken,
   savePlayerName,
   toLocalDateTimeInput,
@@ -258,6 +260,23 @@ export default function ScheduleDetail({ code, onBack }) {
     }
   };
 
+  const handleDeleteSchedule = async () => {
+    const confirmed = window.confirm(
+      `Yakin ingin menghapus jadwal "${schedule.title}" (${schedule.code}) secara permanen dari database?`
+    );
+    if (!confirmed) return;
+    setActionError('');
+    setSubmitting(true);
+    try {
+      await api.deleteSchedule(code);
+      removeHostToken(code);
+      onBack();
+    } catch (err) {
+      setActionError(err.message);
+      setSubmitting(false);
+    }
+  };
+
   const openEdit = () => {
     setEditTitle(schedule.title);
     setEditStartAt(toLocalDateTimeInput(schedule.final_start_at));
@@ -449,7 +468,7 @@ export default function ScheduleDetail({ code, onBack }) {
         </div>
 
         {/* Host Management Bar */}
-        {schedule.is_host && (
+        {schedule.is_host ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#FAF6EE] border border-[#DDD2BC] px-4 py-3">
             <span className="text-xs font-bold text-[#5D4037]">Kontrol Pembuat Meja:</span>
             <div className="flex flex-wrap gap-2">
@@ -487,13 +506,24 @@ export default function ScheduleDetail({ code, onBack }) {
                   {copied === 'hostlink' ? 'Link Host Disalin!' : 'Salin Link Host'}
                 </button>
               )}
+              <button
+                onClick={handleDeleteSchedule}
+                disabled={submitting}
+                className="inline-flex items-center gap-1 rounded-lg bg-[#B83A2D] px-3 py-1.5 text-xs font-bold text-[#FFFDF8] hover:bg-[#982D22] disabled:opacity-50 transition"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Hapus Jadwal
+              </button>
             </div>
+          </div>
+        ) : (
+          <div className="rounded-xl bg-[#FAF6EE] border border-[#DDD2BC] px-4 py-2.5 text-xs font-medium text-[#7A5C52]">
+            Mode Peserta — Hanya pembuat jadwal ({schedule.creator_name}) yang dapat mengubah, membatalkan, atau menghapus jadwal ini.
           </div>
         )}
       </div>
 
       {/* Edit Modal for Host */}
-      {editing && (
+      {schedule.is_host && editing && (
         <form
           onSubmit={handleSaveEdit}
           className="rounded-2xl bg-[#FFFDF8] border border-[#E0A928] p-5 shadow-xs space-y-4"
@@ -807,40 +837,40 @@ export default function ScheduleDetail({ code, onBack }) {
 
             {!isLocked && (
               <div className="space-y-3">
-                {quotaFull && myRsvp?.status !== 'attending' && (
+                {quotaFull && (
                   <div className="rounded-xl bg-[#FAE6E3] border border-[#B83A2D]/35 px-3.5 py-2.5 text-xs font-bold text-[#B83A2D]">
-                    Kuota meja sudah penuh ({attendingList.length}/{schedule.quota}). Pendaftaran kehadiran baru sudah ditutup.
+                    Kuota meja sudah penuh ({attendingList.length}/{schedule.quota}). Seluruh tombol konfirmasi kehadiran telah dinonaktifkan.
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   <button
                     type="button"
-                    disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}
+                    disabled={submitting || quotaFull}
                     onClick={() => {
                       setSelectedRsvpStatus('attending');
                       setRsvpFeedback(null);
                     }}
                     className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'attending'
-                        ? 'border-[#3E2723] bg-[#3E2723] text-[#E0A928] shadow-xs'
+                        ? 'border-[#3E2723] bg-[#3E2723] text-[#E0A928] shadow-xs disabled:opacity-40 disabled:cursor-not-allowed'
                         : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB] disabled:opacity-40 disabled:cursor-not-allowed'
                     }`}
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    {quotaFull && myRsvp?.status !== 'attending' ? 'Kuota Penuh' : 'Hadir'}
+                    {quotaFull ? 'Kuota Penuh' : 'Hadir'}
                   </button>
 
                   <button
                     type="button"
-                    disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}
+                    disabled={submitting || quotaFull}
                     onClick={() => {
                       setSelectedRsvpStatus('maybe');
                       setRsvpFeedback(null);
                     }}
                     className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'maybe'
-                        ? 'border-[#E0A928] bg-[#E0A928] text-[#3E2723] shadow-xs'
+                        ? 'border-[#E0A928] bg-[#E0A928] text-[#3E2723] shadow-xs disabled:opacity-40 disabled:cursor-not-allowed'
                         : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB] disabled:opacity-40 disabled:cursor-not-allowed'
                     }`}
                   >
@@ -849,14 +879,14 @@ export default function ScheduleDetail({ code, onBack }) {
 
                   <button
                     type="button"
-                    disabled={submitting || (quotaFull && myRsvp?.status !== 'attending')}
+                    disabled={submitting || quotaFull}
                     onClick={() => {
                       setSelectedRsvpStatus('declined');
                       setRsvpFeedback(null);
                     }}
                     className={`flex items-center justify-center gap-2 rounded-xl border py-3 px-3 text-sm font-bold transition ${
                       (selectedRsvpStatus || myRsvp?.status) === 'declined'
-                        ? 'border-[#B83A2D] bg-[#B83A2D] text-[#FFFDF8] shadow-xs'
+                        ? 'border-[#B83A2D] bg-[#B83A2D] text-[#FFFDF8] shadow-xs disabled:opacity-40 disabled:cursor-not-allowed'
                         : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB] disabled:opacity-40 disabled:cursor-not-allowed'
                     }`}
                   >
@@ -866,15 +896,11 @@ export default function ScheduleDetail({ code, onBack }) {
 
                 <button
                   type="button"
-                  disabled={
-                    submitting ||
-                    !selectedRsvpStatus ||
-                    (quotaFull && myRsvp?.status !== 'attending')
-                  }
+                  disabled={submitting || !selectedRsvpStatus || quotaFull}
                   onClick={handleRsvp}
                   className="w-full rounded-xl bg-[#B83A2D] py-3.5 px-4 text-sm font-extrabold text-[#FFFDF8] shadow-sm hover:bg-[#982D22] disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
-                  {quotaFull && myRsvp?.status !== 'attending'
+                  {quotaFull
                     ? `Kuota Meja Penuh (${attendingList.length}/${schedule.quota})`
                     : submitting
                     ? 'Menyimpan...'

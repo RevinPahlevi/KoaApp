@@ -515,20 +515,15 @@ app.post('/api/schedules/:code/rsvp', async (req, res) => {
   const cleanName = participant_name.trim();
 
   if (schedule.quota > 0) {
-    const existing = await queryOne(
-      'SELECT status FROM rsvps WHERE schedule_id = ? AND LOWER(participant_name) = LOWER(?)',
-      [schedule.id, cleanName]
-    );
     const currentRow = await queryOne(
       "SELECT COUNT(*) AS cnt FROM rsvps WHERE schedule_id = ? AND status = 'attending'",
       [schedule.id]
     );
     const currentAttending = Number(currentRow?.cnt || 0);
 
-    const alreadyAttending = existing?.status === 'attending';
-    if (!alreadyAttending && currentAttending >= schedule.quota) {
+    if (currentAttending >= schedule.quota) {
       return res.status(400).json({
-        error: `Kuota meja sudah penuh (${schedule.quota}/${schedule.quota}). Pendaftaran kehadiran baru sudah ditutup.`,
+        error: `Kuota meja sudah penuh (${schedule.quota}/${schedule.quota}). Seluruh konfirmasi kehadiran ditutup.`,
       });
     }
   }
@@ -588,6 +583,25 @@ app.post('/api/schedules/:code/shuffle-teams', async (req, res) => {
   await syncMandanTeams(schedule.id, schedule.teams_json, schedule.creator_name, true);
   const updated = await queryOne('SELECT * FROM schedules WHERE id = ?', [schedule.id]);
   res.json(await formatScheduleDetail(updated, hostToken));
+});
+
+// Delete schedule permanently (host-only)
+app.delete('/api/schedules/:code', async (req, res) => {
+  const code = req.params.code.trim().toUpperCase();
+  const hostToken = req.headers['x-host-token'] || req.body?.host_token || '';
+  const schedule = await queryOne('SELECT * FROM schedules WHERE code = ?', [code]);
+
+  if (!schedule) {
+    return res.status(404).json({ error: 'Jadwal tidak ditemukan.' });
+  }
+  if (!hostToken || hostToken !== schedule.host_token) {
+    return res
+      .status(403)
+      .json({ error: 'Hanya pembuat jadwal yang dapat menghapus jadwal ini.' });
+  }
+
+  await execute('DELETE FROM schedules WHERE id = ?', [schedule.id]);
+  res.json({ ok: true, message: 'Jadwal berhasil dihapus dari database.' });
 });
 
 // Locations CRUD

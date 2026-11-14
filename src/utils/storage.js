@@ -31,6 +31,13 @@ export function saveHostToken(code, token) {
   localStorage.setItem(HOST_TOKENS_KEY, JSON.stringify(tokens));
 }
 
+export function removeHostToken(code) {
+  if (!code) return;
+  const tokens = getHostTokens();
+  delete tokens[code.toUpperCase()];
+  localStorage.setItem(HOST_TOKENS_KEY, JSON.stringify(tokens));
+}
+
 export function formatDateTimeID(isoString) {
   if (!isoString) return 'Belum ditentukan';
   const date = new Date(isoString);
