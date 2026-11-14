@@ -187,7 +187,7 @@ async function formatScheduleDetail(schedule, hostToken, isAdmin = false) {
     [schedule.id]
   );
 
-  const { host_token, teams_json, ...safeSchedule } = schedule;
+  const { host_token, teams_json, winner_json, ...safeSchedule } = schedule;
   let parsedTeams = { teams: [], reserve: [] };
   if (teams_json) {
     try {
@@ -196,10 +196,19 @@ async function formatScheduleDetail(schedule, hostToken, isAdmin = false) {
       parsedTeams = { teams: [], reserve: [] };
     }
   }
+  let parsedWinner = null;
+  if (winner_json) {
+    try {
+      parsedWinner = JSON.parse(winner_json);
+    } catch {
+      parsedWinner = null;
+    }
+  }
   return {
     ...safeSchedule,
     teams: parsedTeams.teams || [],
     reserve_players: parsedTeams.reserve || [],
+    winner: parsedWinner,
     is_host: Boolean((hostToken && hostToken === host_token) || isAdmin),
     is_admin: Boolean(isAdmin),
     poll_options: enrichedOptions,
@@ -233,7 +242,7 @@ app.get('/api/schedules', async (req, res) => {
   let query = `
     SELECT s.id, s.code, s.title, s.description, s.creator_name, s.mode, s.status,
            s.final_start_at, s.final_end_at, s.location_name, s.location_address,
-           s.location_maps_url, s.quota, s.created_at, s.updated_at,
+           s.location_maps_url, s.quota, s.winner_json, s.created_at, s.updated_at,
            (SELECT COUNT(*) FROM rsvps r WHERE r.schedule_id = s.id AND r.status = 'attending') AS attending_count,
            (SELECT COUNT(*) FROM rsvps r WHERE r.schedule_id = s.id AND r.status = 'maybe') AS maybe_count,
            (SELECT COUNT(DISTINCT participant_name) FROM poll_votes pv WHERE pv.schedule_id = s.id) AS voter_count
@@ -257,10 +266,22 @@ app.get('/api/schedules', async (req, res) => {
     if (!namesBySchedule.has(sid)) namesBySchedule.set(sid, []);
     namesBySchedule.get(sid).push(r.participant_name);
   }
-  const enriched = rows.map((row) => ({
-    ...row,
-    attending_names: namesBySchedule.get(Number(row.id)) || [],
-  }));
+  const enriched = rows.map((row) => {
+    const { winner_json, ...rest } = row;
+    let winner = null;
+    if (winner_json) {
+      try {
+        winner = JSON.parse(winner_json);
+      } catch {
+        winner = null;
+      }
+    }
+    return {
+      ...rest,
+      winner,
+      attending_names: namesBySchedule.get(Number(row.id)) || [],
+    };
+  });
   res.json(enriched);
 });
 
@@ -426,12 +447,14 @@ app.patch('/api/schedules/:code', async (req, res) => {
     quota,
     status,
     finalize_option_id,
+    winner_team_number,
     actor_name = schedule.creator_name,
   } = req.body;
 
   let nextStartAt = final_start_at !== undefined ? final_start_at : schedule.final_start_at;
   let nextEndAt = final_end_at !== undefined ? final_end_at : schedule.final_end_at;
   let nextStatus = status !== undefined ? status : schedule.status;
+  let nextWinnerJson = schedule.winner_json;
   let logMessage = 'Memperbarui detail jadwal.';
   let actionType = 'updated';
 
@@ -451,9 +474,31 @@ app.patch('/api/schedules/:code', async (req, res) => {
   } else if (status === 'cancelled' && schedule.status !== 'cancelled') {
     actionType = 'cancelled';
     logMessage = 'Membatalkan jadwal bermain.';
-  } else if (status === 'completed' && schedule.status !== 'completed') {
+  } else if (status === 'completed') {
     actionType = 'completed';
-    logMessage = 'Menandai sesi permainan telah selesai.';
+    if (winner_team_number) {
+      let parsedTeams = { teams: [] };
+      try {
+        parsedTeams = schedule.teams_json ? JSON.parse(schedule.teams_json) : { teams: [] };
+      } catch {
+        parsedTeams = { teams: [] };
+      }
+      const winTeam = (parsedTeams.teams || []).find(
+        (t) => Number(t.team_number) === Number(winner_team_number)
+      );
+      if (winTeam) {
+        nextWinnerJson = JSON.stringify({
+          team_number: winTeam.team_number,
+          members: winTeam.members,
+        });
+        logMessage = `Menandai sesi selesai. Pemenang: Tim ${winTeam.team_number} (${winTeam.members.join(' & ')}).`;
+      } else {
+        logMessage = 'Menandai sesi permainan telah selesai.';
+      }
+    } else {
+      nextWinnerJson = null;
+      logMessage = 'Menandai sesi permainan telah selesai.';
+    }
   }
 
   await execute(
@@ -467,6 +512,7 @@ app.patch('/api/schedules/:code', async (req, res) => {
       location_maps_url = ?,
       quota = ?,
       status = ?,
+      winner_json = ?,
       updated_at = ?
     WHERE id = ?`,
     [
@@ -479,6 +525,7 @@ app.patch('/api/schedules/:code', async (req, res) => {
       location_maps_url !== undefined ? location_maps_url.trim() : schedule.location_maps_url,
       quota !== undefined ? Math.max(0, Number(quota) || 0) : schedule.quota,
       nextStatus,
+      nextWinnerJson,
       nowIso(),
       schedule.id,
     ]
@@ -729,6 +776,117 @@ app.get('/api/stats', async (req, res) => {
     completed_schedules: completedSchedules,
     top_players: topPlayers,
     top_locations: topLocations,
+  });
+});
+
+// Dashboard: team leaderboard, individual leaderboard, and calendar schedules
+app.get('/api/dashboard', async (req, res) => {
+  const allSchedules = await queryAll(
+    `SELECT s.id, s.code, s.title, s.status, s.final_start_at, s.location_name, s.quota, s.teams_json, s.winner_json,
+            (SELECT COUNT(*) FROM rsvps r WHERE r.schedule_id = s.id AND r.status = 'attending') AS attending_count
+     FROM schedules s
+     WHERE s.status != 'cancelled'
+     ORDER BY COALESCE(s.final_start_at, s.created_at) ASC`
+  );
+
+  const rsvpAttending = await queryAll(
+    `SELECT r.participant_name, s.status
+     FROM rsvps r
+     JOIN schedules s ON s.id = r.schedule_id
+     WHERE r.status = 'attending' AND s.status IN ('scheduled', 'completed')`
+  );
+
+  // Build individual leaderboard (wins + games_count)
+  const playerMap = new Map();
+  const ensurePlayer = (rawName) => {
+    const key = rawName.trim().toLowerCase();
+    if (!playerMap.has(key)) {
+      playerMap.set(key, { name: rawName.trim(), wins: 0, games_count: 0 });
+    }
+    return playerMap.get(key);
+  };
+
+  for (const r of rsvpAttending) {
+    ensurePlayer(r.participant_name).games_count += 1;
+  }
+
+  // Build mandan team leaderboard (wins + matches)
+  const teamMap = new Map();
+  const ensureTeam = (members) => {
+    const sorted = [...members].map((m) => m.trim()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    const key = sorted.map((m) => m.toLowerCase()).join('::');
+    if (!teamMap.has(key)) {
+      teamMap.set(key, {
+        pair_name: sorted.join(' & '),
+        members: sorted,
+        wins: 0,
+        matches: 0,
+      });
+    }
+    return teamMap.get(key);
+  };
+
+  const calendarSchedules = [];
+
+  for (const s of allSchedules) {
+    let winner = null;
+    if (s.winner_json) {
+      try {
+        winner = JSON.parse(s.winner_json);
+      } catch {
+        winner = null;
+      }
+    }
+
+    if (s.status === 'completed' && s.teams_json) {
+      try {
+        const parsedTeams = JSON.parse(s.teams_json);
+        for (const t of parsedTeams.teams || []) {
+          if (t.members?.length === 2) {
+            ensureTeam(t.members).matches += 1;
+          }
+        }
+      } catch {
+        // ignore invalid json
+      }
+    }
+
+    if (s.status === 'completed' && winner?.members?.length) {
+      if (winner.members.length === 2) {
+        ensureTeam(winner.members).wins += 1;
+      }
+      for (const m of winner.members) {
+        ensurePlayer(m).wins += 1;
+      }
+    }
+
+    if (s.final_start_at) {
+      calendarSchedules.push({
+        id: s.id,
+        code: s.code,
+        title: s.title,
+        status: s.status,
+        final_start_at: s.final_start_at,
+        location_name: s.location_name,
+        attending_count: Number(s.attending_count || 0),
+        quota: Number(s.quota || 0),
+        winner,
+      });
+    }
+  }
+
+  const teamLeaderboard = [...teamMap.values()].sort(
+    (a, b) => b.wins - a.wins || b.matches - a.matches || a.pair_name.localeCompare(b.pair_name)
+  );
+
+  const playerLeaderboard = [...playerMap.values()].sort(
+    (a, b) => b.wins - a.wins || b.games_count - a.games_count || a.name.localeCompare(b.name)
+  );
+
+  res.json({
+    team_leaderboard: teamLeaderboard,
+    player_leaderboard: playerLeaderboard,
+    calendar_schedules: calendarSchedules,
   });
 });
 

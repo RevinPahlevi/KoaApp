@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Shuffle,
   Trash2,
+  Trophy,
   Users,
   Vote,
   XCircle,
@@ -48,6 +49,8 @@ export default function ScheduleDetail({ code, onBack }) {
 
   // Host edit modal state
   const [editing, setEditing] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [selectedWinnerTeam, setSelectedWinnerTeam] = useState('');
   const [editTitle, setEditTitle] = useState('');
   const [editStartAt, setEditStartAt] = useState('');
   const [editLocName, setEditLocName] = useState('');
@@ -231,15 +234,17 @@ export default function ScheduleDetail({ code, onBack }) {
     }
   };
 
-  const handleStatusChange = async (newStatus) => {
+  const handleStatusChange = async (newStatus, winnerTeamNumber = null) => {
     setActionError('');
     setSubmitting(true);
     try {
       const updated = await api.updateSchedule(code, {
         status: newStatus,
+        ...(winnerTeamNumber ? { winner_team_number: Number(winnerTeamNumber) } : {}),
         actor_name: playerName.trim() || schedule.creator_name,
       });
       setSchedule(updated);
+      setCompleting(false);
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -482,7 +487,12 @@ export default function ScheduleDetail({ code, onBack }) {
               )}
               {schedule.status === 'scheduled' && (
                 <button
-                  onClick={() => handleStatusChange('completed')}
+                  onClick={() => {
+                    setSelectedWinnerTeam(
+                      schedule.teams?.length > 0 ? String(schedule.teams[0].team_number) : ''
+                    );
+                    setCompleting((prev) => !prev);
+                  }}
                   disabled={submitting}
                   className="inline-flex items-center gap-1 rounded-lg bg-[#3E2723] px-3 py-1.5 text-xs font-bold text-[#EFE9DB] hover:bg-[#5D4037]"
                 >
@@ -521,6 +531,100 @@ export default function ScheduleDetail({ code, onBack }) {
           </div>
         )}
       </div>
+
+      {/* Winner Banner if Completed */}
+      {schedule.status === 'completed' && schedule.winner && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#3E2723] border-2 border-[#E0A928] p-4 sm:p-5 text-[#EFE9DB] shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E0A928] text-[#3E2723] shrink-0">
+              <Trophy className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="text-xs font-extrabold uppercase tracking-wider text-[#E0A928]">
+                Pemenang Sesi (Tim {schedule.winner.team_number})
+              </div>
+              <div className="text-base sm:text-lg font-extrabold text-[#FFFDF8]">
+                {schedule.winner.members?.join(' & ')}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Select Winner Panel when Completing Schedule */}
+      {schedule.is_host && completing && schedule.status === 'scheduled' && (
+        <div className="rounded-2xl bg-[#FFFDF8] border-2 border-[#E0A928] p-5 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-[#B83A2D]" />
+            <h3 className="text-sm font-extrabold text-[#3E2723]">
+              Pilih Tim Mandan yang Menang
+            </h3>
+          </div>
+
+          {schedule.teams?.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {schedule.teams.map((team) => {
+                const isPicked = selectedWinnerTeam === String(team.team_number);
+                return (
+                  <button
+                    key={team.team_number}
+                    type="button"
+                    onClick={() => setSelectedWinnerTeam(String(team.team_number))}
+                    className={`rounded-xl border p-3.5 text-left transition ${
+                      isPicked
+                        ? 'border-[#3E2723] bg-[#3E2723] text-[#EFE9DB] shadow-xs'
+                        : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#3E2723] hover:bg-[#EFE9DB]'
+                    }`}
+                  >
+                    <div
+                      className={`text-xs font-extrabold uppercase tracking-wider mb-1 ${
+                        isPicked ? 'text-[#E0A928]' : 'text-[#B83A2D]'
+                      }`}
+                    >
+                      Tim {team.team_number}
+                    </div>
+                    <div className="text-sm font-bold">{team.members.join(' & ')}</div>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setSelectedWinnerTeam('')}
+                className={`rounded-xl border p-3.5 text-left transition ${
+                  selectedWinnerTeam === ''
+                    ? 'border-[#3E2723] bg-[#3E2723] text-[#EFE9DB]'
+                    : 'border-[#DDD2BC] bg-[#FAF6EE] text-[#7A5C52] hover:bg-[#EFE9DB]'
+                }`}
+              >
+                <div className="text-xs font-extrabold uppercase tracking-wider mb-1">Seri / Lainnya</div>
+                <div className="text-sm font-bold">Selesaikan tanpa pemenang</div>
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-[#7A5C52]">
+              Belum ada pembagian tim mandan (kurang dari 4 pemain hadir). Sesi tetap dapat ditandai selesai.
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setCompleting(false)}
+              className="rounded-xl px-4 py-2 text-xs font-bold text-[#5D4037] hover:bg-[#EFE9DB]"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={() => handleStatusChange('completed', selectedWinnerTeam || null)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#B83A2D] px-4 py-2 text-xs font-extrabold text-[#FFFDF8] hover:bg-[#982D22] disabled:opacity-50"
+            >
+              <Trophy className="h-3.5 w-3.5" /> Simpan & Selesaikan Sesi
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal for Host */}
       {schedule.is_host && editing && (

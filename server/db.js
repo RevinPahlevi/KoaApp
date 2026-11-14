@@ -73,6 +73,7 @@ export async function initDb() {
           location_maps_url TEXT DEFAULT '',
           quota INTEGER NOT NULL DEFAULT 4,
           teams_json TEXT DEFAULT NULL,
+          winner_json TEXT DEFAULT NULL,
           created_at TEXT DEFAULT '',
           updated_at TEXT DEFAULT ''
         );
@@ -112,6 +113,8 @@ export async function initDb() {
           message TEXT NOT NULL,
           created_at TEXT DEFAULT ''
         );
+
+        ALTER TABLE schedules ADD COLUMN IF NOT EXISTS winner_json TEXT DEFAULT NULL;
       `);
       return;
     }
@@ -148,6 +151,7 @@ export async function initDb() {
         location_maps_url TEXT DEFAULT '',
         quota INTEGER NOT NULL DEFAULT 4,
         teams_json TEXT DEFAULT NULL,
+        winner_json TEXT DEFAULT NULL,
         created_at TEXT DEFAULT (datetime('now')),
         updated_at TEXT DEFAULT (datetime('now'))
       );
@@ -197,6 +201,9 @@ export async function initDb() {
     const scheduleCols = db.prepare('PRAGMA table_info(schedules)').all();
     if (!scheduleCols.some((col) => col.name === 'teams_json')) {
       db.exec('ALTER TABLE schedules ADD COLUMN teams_json TEXT DEFAULT NULL');
+    }
+    if (!scheduleCols.some((col) => col.name === 'winner_json')) {
+      db.exec('ALTER TABLE schedules ADD COLUMN winner_json TEXT DEFAULT NULL');
     }
   })().catch((err) => {
     initPromise = null;

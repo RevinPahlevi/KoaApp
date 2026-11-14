@@ -5,6 +5,7 @@ import {
   Hash,
   History,
   Info,
+  LayoutDashboard,
   LogOut,
   MapPin,
   Plus,
@@ -21,6 +22,7 @@ import ScheduleDetail from './components/ScheduleDetail';
 import LocationsTab from './components/LocationsTab';
 import HistoryStatsTab from './components/HistoryStatsTab';
 import InfoTab from './components/InfoTab';
+import DashboardTab from './components/DashboardTab';
 import AdminLoginPage from './components/AdminLoginPage';
 import { clearAdminToken, formatDateTimeID, getAdminToken } from './utils/storage';
 
@@ -175,6 +177,16 @@ export default function App() {
                   Jadwal
                 </button>
                 <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
+                    activeTab === 'dashboard'
+                      ? 'bg-[#3E2723] text-[#EFE9DB] shadow-2xs'
+                      : 'text-[#5D4037] hover:text-[#3E2723]'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
                   onClick={() => setActiveTab('locations')}
                   className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
                     activeTab === 'locations'
@@ -251,6 +263,8 @@ export default function App() {
           />
         ) : activeCode ? (
           <ScheduleDetail code={activeCode} onBack={navigateHome} />
+        ) : activeTab === 'dashboard' ? (
+          <DashboardTab onSelectSchedule={navigateToSchedule} />
         ) : activeTab === 'locations' ? (
           <LocationsTab />
         ) : activeTab === 'history' ? (
@@ -462,10 +476,10 @@ export default function App() {
       {/* Mobile Bottom Navigation */}
       {!activeCode && !showAdminLogin && (
         <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#DDD2BC] bg-[#FAF6EE]/95 backdrop-blur-md">
-          <div className="grid grid-cols-4 h-16">
+          <div className="grid grid-cols-5 h-16">
             <button
               onClick={() => setActiveTab('schedules')}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
                 activeTab === 'schedules' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
               }`}
             >
@@ -473,8 +487,17 @@ export default function App() {
               Jadwal
             </button>
             <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
+                activeTab === 'dashboard' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
+              }`}
+            >
+              <LayoutDashboard className="h-5 w-5" />
+              Dashboard
+            </button>
+            <button
               onClick={() => setActiveTab('locations')}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
                 activeTab === 'locations' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
               }`}
             >
@@ -483,7 +506,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
                 activeTab === 'history' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
               }`}
             >
@@ -492,7 +515,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab('info')}
-              className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition ${
+              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
                 activeTab === 'info' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
               }`}
             >

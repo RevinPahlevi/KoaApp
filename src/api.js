@@ -90,6 +90,8 @@ export const api = {
 
   getStats: () => request('/api/stats'),
 
+  getDashboard: () => request('/api/dashboard'),
+
   adminLogin: (payload) =>
     request('/api/admin/login', {
       method: 'POST',
