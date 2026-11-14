@@ -894,7 +894,9 @@ export default function ScheduleDetail({ code, onBack }) {
                       <span className="text-slate-600">{log.message}</span>
                     </div>
                     <div className="text-[11px] text-slate-400 mt-0.5">
-                      {formatShortDateID(log.created_at + 'Z')}
+                      {formatShortDateID(
+                        log.created_at?.endsWith('Z') ? log.created_at : `${log.created_at}Z`
+                      )}
                     </div>
                   </div>
                 </div>
