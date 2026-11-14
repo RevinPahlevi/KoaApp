@@ -13,6 +13,7 @@ import {
   History,
   Image as ImageIcon,
   MapPin,
+  RotateCcw,
   Share2,
   ShieldCheck,
   Shuffle,
@@ -320,7 +321,11 @@ export default function ScheduleDetail({ code, onBack }) {
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     setActionError('');
-    if (editStartAt && new Date(editStartAt).getTime() < Date.now()) {
+    if (
+      editStartAt &&
+      schedule.status !== 'completed' &&
+      new Date(editStartAt).getTime() < Date.now()
+    ) {
       setActionError('Tanggal dan jam bermain tidak boleh waktu yang sudah lewat.');
       return;
     }
@@ -502,12 +507,21 @@ export default function ScheduleDetail({ code, onBack }) {
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#FAF6EE] border border-[#DDD2BC] px-4 py-3">
             <span className="text-xs font-bold text-[#5D4037]">Kontrol Pembuat Meja:</span>
             <div className="flex flex-wrap gap-2">
-              {!isLocked && (
+              {(!isLocked || schedule.is_admin) && (
                 <button
                   onClick={openEdit}
                   className="inline-flex items-center gap-1 rounded-lg bg-[#FFFDF8] border border-[#DDD2BC] px-3 py-1.5 text-xs font-bold text-[#3E2723] hover:bg-[#EFE9DB]"
                 >
                   <Edit3 className="h-3.5 w-3.5" /> Edit Detail
+                </button>
+              )}
+              {schedule.is_admin && schedule.status === 'completed' && (
+                <button
+                  onClick={() => handleStatusChange('scheduled')}
+                  disabled={submitting}
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#E0A928] px-3 py-1.5 text-xs font-bold text-[#3E2723] hover:bg-[#C9941E] disabled:opacity-50 transition"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" /> Buka Kembali Jadwal
                 </button>
               )}
               {schedule.status === 'scheduled' && (
@@ -778,7 +792,7 @@ export default function ScheduleDetail({ code, onBack }) {
             {schedule.status !== 'polling' && (
               <input
                 type="datetime-local"
-                min={getNowLocalDateTimeInput()}
+                min={schedule.status === 'completed' ? undefined : getNowLocalDateTimeInput()}
                 value={editStartAt}
                 onChange={(e) => setEditStartAt(e.target.value)}
                 className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"

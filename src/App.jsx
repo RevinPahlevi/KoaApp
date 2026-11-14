@@ -39,7 +39,7 @@ export default function App() {
   const [activeCode, setActiveCode] = useState(parseCodeFromPath);
   const [showAdminLogin, setShowAdminLogin] = useState(isAdminPath);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState('schedules');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [schedules, setSchedules] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [joinCode, setJoinCode] = useState('');

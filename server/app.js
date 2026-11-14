@@ -486,6 +486,18 @@ app.patch('/api/schedules/:code', async (req, res) => {
   } else if (status === 'cancelled' && schedule.status !== 'cancelled') {
     actionType = 'cancelled';
     logMessage = 'Membatalkan jadwal bermain.';
+  } else if (
+    status === 'scheduled' &&
+    (schedule.status === 'completed' || schedule.status === 'cancelled')
+  ) {
+    if (!isAdmin) {
+      return res
+        .status(403)
+        .json({ error: 'Hanya Admin yang dapat membuka kembali jadwal yang sudah selesai.' });
+    }
+    nextWinnerJson = null;
+    actionType = 'reopened';
+    logMessage = 'Admin membuka kembali jadwal yang sudah selesai.';
   } else if (status === 'completed') {
     actionType = 'completed';
     if (winner_team_number) {
