@@ -95,6 +95,107 @@ export default function DashboardTab({ onSelectSchedule }) {
 
   return (
     <div className="space-y-6">
+      {/* Leaderboards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Leaderboard per Mandan */}
+        <section className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs space-y-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-[#E0A928]" />
+            <div>
+              <h3 className="text-base font-extrabold text-[#3E2723]">Leaderboard per Mandan</h3>
+              <p className="text-xs text-[#7A5C52]">Peringkat pasangan tim berdasarkan kemenangan</p>
+            </div>
+          </div>
+
+          {!data?.team_leaderboard?.length ? (
+            <p className="text-sm text-[#7A5C52] py-4">
+              Belum ada data kemenangan mandan. Tandai sesi selesai dan pilih tim pemenang.
+            </p>
+          ) : (
+            <div className="space-y-2.5">
+              {data.team_leaderboard.map((team, idx) => (
+                <div
+                  key={team.pair_name}
+                  className="flex items-center justify-between rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold ${
+                        idx === 0
+                          ? 'bg-[#E0A928] text-[#3E2723]'
+                          : idx === 1
+                          ? 'bg-[#3E2723] text-[#EFE9DB]'
+                          : idx === 2
+                          ? 'bg-[#B83A2D] text-[#FFFDF8]'
+                          : 'bg-[#EFE9DB] text-[#5D4037]'
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                    <div>
+                      <div className="text-sm font-extrabold text-[#3E2723]">{team.pair_name}</div>
+                      <div className="text-[11px] text-[#7A5C52]">{team.matches}x main bareng</div>
+                    </div>
+                  </div>
+                  <span className="rounded-lg bg-[#3E2723] px-2.5 py-1 text-xs font-extrabold text-[#E0A928]">
+                    {team.wins} Menang
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Leaderboard per Orangan */}
+        <section className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs space-y-4">
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-[#B83A2D]" />
+            <div>
+              <h3 className="text-base font-extrabold text-[#3E2723]">Leaderboard per Orangan</h3>
+              <p className="text-xs text-[#7A5C52]">Peringkat individu berdasarkan menang & hadir</p>
+            </div>
+          </div>
+
+          {!data?.player_leaderboard?.length ? (
+            <p className="text-sm text-[#7A5C52] py-4">Belum ada data pemain.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {data.player_leaderboard.map((p, idx) => (
+                <div
+                  key={p.name}
+                  className="flex items-center justify-between rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold ${
+                        idx === 0
+                          ? 'bg-[#E0A928] text-[#3E2723]'
+                          : idx === 1
+                          ? 'bg-[#3E2723] text-[#EFE9DB]'
+                          : idx === 2
+                          ? 'bg-[#B83A2D] text-[#FFFDF8]'
+                          : 'bg-[#EFE9DB] text-[#5D4037]'
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                    <div>
+                      <div className="text-sm font-extrabold text-[#3E2723]">{p.name}</div>
+                      <div className="text-[11px] text-[#7A5C52] inline-flex items-center gap-1">
+                        <Users className="h-3 w-3" /> {p.games_count}x main
+                      </div>
+                    </div>
+                  </div>
+                  <span className="rounded-lg bg-[#B83A2D] px-2.5 py-1 text-xs font-extrabold text-[#FFFDF8]">
+                    {p.wins} Menang
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
       {/* Kalender Jadwal */}
       <section className="rounded-3xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 sm:p-6 shadow-xs space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -272,107 +373,6 @@ export default function DashboardTab({ onSelectSchedule }) {
           </div>
         </div>
       </section>
-
-      {/* Leaderboards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Leaderboard per Mandan */}
-        <section className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs space-y-4">
-          <div className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-[#E0A928]" />
-            <div>
-              <h3 className="text-base font-extrabold text-[#3E2723]">Leaderboard per Mandan</h3>
-              <p className="text-xs text-[#7A5C52]">Peringkat pasangan tim berdasarkan kemenangan</p>
-            </div>
-          </div>
-
-          {!data?.team_leaderboard?.length ? (
-            <p className="text-sm text-[#7A5C52] py-4">
-              Belum ada data kemenangan mandan. Tandai sesi selesai dan pilih tim pemenang.
-            </p>
-          ) : (
-            <div className="space-y-2.5">
-              {data.team_leaderboard.map((team, idx) => (
-                <div
-                  key={team.pair_name}
-                  className="flex items-center justify-between rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold ${
-                        idx === 0
-                          ? 'bg-[#E0A928] text-[#3E2723]'
-                          : idx === 1
-                          ? 'bg-[#3E2723] text-[#EFE9DB]'
-                          : idx === 2
-                          ? 'bg-[#B83A2D] text-[#FFFDF8]'
-                          : 'bg-[#EFE9DB] text-[#5D4037]'
-                      }`}
-                    >
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <div className="text-sm font-extrabold text-[#3E2723]">{team.pair_name}</div>
-                      <div className="text-[11px] text-[#7A5C52]">{team.matches}x main bareng</div>
-                    </div>
-                  </div>
-                  <span className="rounded-lg bg-[#3E2723] px-2.5 py-1 text-xs font-extrabold text-[#E0A928]">
-                    {team.wins} Menang
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Leaderboard per Orangan */}
-        <section className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs space-y-4">
-          <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-[#B83A2D]" />
-            <div>
-              <h3 className="text-base font-extrabold text-[#3E2723]">Leaderboard per Orangan</h3>
-              <p className="text-xs text-[#7A5C52]">Peringkat individu berdasarkan menang & hadir</p>
-            </div>
-          </div>
-
-          {!data?.player_leaderboard?.length ? (
-            <p className="text-sm text-[#7A5C52] py-4">Belum ada data pemain.</p>
-          ) : (
-            <div className="space-y-2.5">
-              {data.player_leaderboard.map((p, idx) => (
-                <div
-                  key={p.name}
-                  className="flex items-center justify-between rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold ${
-                        idx === 0
-                          ? 'bg-[#E0A928] text-[#3E2723]'
-                          : idx === 1
-                          ? 'bg-[#3E2723] text-[#EFE9DB]'
-                          : idx === 2
-                          ? 'bg-[#B83A2D] text-[#FFFDF8]'
-                          : 'bg-[#EFE9DB] text-[#5D4037]'
-                      }`}
-                    >
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <div className="text-sm font-extrabold text-[#3E2723]">{p.name}</div>
-                      <div className="text-[11px] text-[#7A5C52] inline-flex items-center gap-1">
-                        <Users className="h-3 w-3" /> {p.games_count}x main
-                      </div>
-                    </div>
-                  </div>
-                  <span className="rounded-lg bg-[#B83A2D] px-2.5 py-1 text-xs font-extrabold text-[#FFFDF8]">
-                    {p.wins} Menang
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
     </div>
   );
 }

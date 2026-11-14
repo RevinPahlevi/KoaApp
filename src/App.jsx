@@ -167,16 +167,6 @@ export default function App() {
             {!activeCode && !showAdminLogin && (
               <nav className="hidden sm:flex items-center gap-1 mr-2 rounded-xl bg-[#EFE9DB] p-1 border border-[#DDD2BC]">
                 <button
-                  onClick={() => setActiveTab('schedules')}
-                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
-                    activeTab === 'schedules'
-                      ? 'bg-[#3E2723] text-[#EFE9DB] shadow-2xs'
-                      : 'text-[#5D4037] hover:text-[#3E2723]'
-                  }`}
-                >
-                  Jadwal
-                </button>
-                <button
                   onClick={() => setActiveTab('dashboard')}
                   className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
                     activeTab === 'dashboard'
@@ -185,6 +175,16 @@ export default function App() {
                   }`}
                 >
                   Dashboard
+                </button>
+                <button
+                  onClick={() => setActiveTab('schedules')}
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
+                    activeTab === 'schedules'
+                      ? 'bg-[#3E2723] text-[#EFE9DB] shadow-2xs'
+                      : 'text-[#5D4037] hover:text-[#3E2723]'
+                  }`}
+                >
+                  Jadwal
                 </button>
                 <button
                   onClick={() => setActiveTab('locations')}
@@ -478,15 +478,6 @@ export default function App() {
         <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[#DDD2BC] bg-[#FAF6EE]/95 backdrop-blur-md">
           <div className="grid grid-cols-5 h-16">
             <button
-              onClick={() => setActiveTab('schedules')}
-              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
-                activeTab === 'schedules' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
-              }`}
-            >
-              <Calendar className="h-5 w-5" />
-              Jadwal
-            </button>
-            <button
               onClick={() => setActiveTab('dashboard')}
               className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
                 activeTab === 'dashboard' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
@@ -494,6 +485,15 @@ export default function App() {
             >
               <LayoutDashboard className="h-5 w-5" />
               Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('schedules')}
+              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
+                activeTab === 'schedules' ? 'text-[#B83A2D]' : 'text-[#7A5C52]'
+              }`}
+            >
+              <Calendar className="h-5 w-5" />
+              Jadwal
             </button>
             <button
               onClick={() => setActiveTab('locations')}
