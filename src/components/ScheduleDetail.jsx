@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Calendar,
+  Camera,
   Check,
   CheckCircle2,
   Clock,
@@ -10,6 +11,7 @@ import {
   ExternalLink,
   HelpCircle,
   History,
+  Image as ImageIcon,
   MapPin,
   Share2,
   ShieldCheck,
@@ -18,10 +20,12 @@ import {
   Trophy,
   Users,
   Vote,
+  X,
   XCircle,
 } from 'lucide-react';
 import { api } from '../api';
 import StatusBadge from './StatusBadge';
+import { compressImageFile } from '../utils/image';
 import {
   formatDateTimeID,
   formatShortDateID,
@@ -51,6 +55,9 @@ export default function ScheduleDetail({ code, onBack }) {
   const [editing, setEditing] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [selectedWinnerTeam, setSelectedWinnerTeam] = useState('');
+  const [proofPhoto, setProofPhoto] = useState('');
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+  const [photoLightboxOpen, setPhotoLightboxOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editStartAt, setEditStartAt] = useState('');
   const [editLocName, setEditLocName] = useState('');
@@ -234,17 +241,35 @@ export default function ScheduleDetail({ code, onBack }) {
     }
   };
 
-  const handleStatusChange = async (newStatus, winnerTeamNumber = null) => {
+  const handleProofPhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setActionError('');
+    setPhotoProcessing(true);
+    try {
+      const compressed = await compressImageFile(file);
+      setProofPhoto(compressed);
+    } catch (err) {
+      setActionError(err.message || 'Gagal memproses foto.');
+    } finally {
+      setPhotoProcessing(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleStatusChange = async (newStatus, winnerTeamNumber = null, proofPhotoData = null) => {
     setActionError('');
     setSubmitting(true);
     try {
       const updated = await api.updateSchedule(code, {
         status: newStatus,
         ...(winnerTeamNumber ? { winner_team_number: Number(winnerTeamNumber) } : {}),
+        ...(proofPhotoData ? { proof_photo: proofPhotoData } : {}),
         actor_name: playerName.trim() || schedule.creator_name,
       });
       setSchedule(updated);
       setCompleting(false);
+      setProofPhoto('');
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -491,6 +516,7 @@ export default function ScheduleDetail({ code, onBack }) {
                     setSelectedWinnerTeam(
                       schedule.teams?.length > 0 ? String(schedule.teams[0].team_number) : ''
                     );
+                    setProofPhoto('');
                     setCompleting((prev) => !prev);
                   }}
                   disabled={submitting}
@@ -551,6 +577,62 @@ export default function ScheduleDetail({ code, onBack }) {
         </div>
       )}
 
+      {/* Proof Photo Card if Completed & Uploaded */}
+      {schedule.status === 'completed' && schedule.proof_photo && (
+        <div className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-4 sm:p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Camera className="h-4 w-4 text-[#B83A2D]" />
+              <h3 className="text-sm font-extrabold text-[#3E2723]">Bukti Foto Bermain</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPhotoLightboxOpen(true)}
+              className="text-xs font-bold text-[#B83A2D] hover:underline"
+            >
+              Perbesar Foto
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPhotoLightboxOpen(true)}
+            className="block w-full overflow-hidden rounded-xl border border-[#DDD2BC] bg-[#FAF6EE]"
+          >
+            <img
+              src={schedule.proof_photo}
+              alt={`Bukti bermain ${schedule.title}`}
+              className="max-h-80 w-full object-cover hover:scale-[1.01] transition-transform"
+            />
+          </button>
+        </div>
+      )}
+
+      {photoLightboxOpen && schedule.proof_photo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+          onClick={() => setPhotoLightboxOpen(false)}
+        >
+          <div
+            className="relative max-w-3xl w-full rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-3 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPhotoLightboxOpen(false)}
+              className="absolute right-4 top-4 rounded-full bg-[#3E2723]/85 p-1.5 text-[#FFFDF8] hover:bg-[#3E2723]"
+              aria-label="Tutup foto"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <img
+              src={schedule.proof_photo}
+              alt={`Bukti bermain ${schedule.title}`}
+              className="max-h-[80vh] w-full rounded-xl object-contain bg-[#FAF6EE]"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Select Winner Panel when Completing Schedule */}
       {schedule.is_host && completing && schedule.status === 'scheduled' && (
         <div className="rounded-2xl bg-[#FFFDF8] border-2 border-[#E0A928] p-5 shadow-sm space-y-4">
@@ -606,18 +688,69 @@ export default function ScheduleDetail({ code, onBack }) {
             </p>
           )}
 
+          {/* Optional Proof Photo Upload */}
+          <div className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <label className="flex items-center gap-1.5 text-xs font-extrabold text-[#3E2723]">
+                <Camera className="h-4 w-4 text-[#B83A2D]" />
+                Upload Bukti Foto Bermain <span className="font-semibold text-[#7A5C52]">(Opsional)</span>
+              </label>
+              {proofPhoto && (
+                <button
+                  type="button"
+                  onClick={() => setProofPhoto('')}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-[#B83A2D] hover:underline"
+                >
+                  <X className="h-3.5 w-3.5" /> Hapus Foto
+                </button>
+              )}
+            </div>
+
+            {proofPhoto ? (
+              <div className="overflow-hidden rounded-xl border border-[#DDD2BC] bg-[#FFFDF8]">
+                <img
+                  src={proofPhoto}
+                  alt="Preview bukti bermain"
+                  className="max-h-56 w-full object-cover"
+                />
+              </div>
+            ) : (
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#DDD2BC] bg-[#FFFDF8] px-4 py-4 text-center hover:border-[#E0A928] transition">
+                <ImageIcon className="h-6 w-6 text-[#7A5C52]" />
+                <span className="text-xs font-bold text-[#3E2723]">
+                  {photoProcessing ? 'Memproses foto...' : 'Pilih foto dari perangkat / kamera'}
+                </span>
+                <span className="text-[11px] text-[#7A5C52]">
+                  Otomatis dikompresi, akan tampil di Galeri Foto Riwayat
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProofPhotoChange}
+                  disabled={photoProcessing || submitting}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
-              onClick={() => setCompleting(false)}
+              onClick={() => {
+                setCompleting(false);
+                setProofPhoto('');
+              }}
               className="rounded-xl px-4 py-2 text-xs font-bold text-[#5D4037] hover:bg-[#EFE9DB]"
             >
               Batal
             </button>
             <button
               type="button"
-              disabled={submitting}
-              onClick={() => handleStatusChange('completed', selectedWinnerTeam || null)}
+              disabled={submitting || photoProcessing}
+              onClick={() =>
+                handleStatusChange('completed', selectedWinnerTeam || null, proofPhoto || null)
+              }
               className="inline-flex items-center gap-1.5 rounded-xl bg-[#B83A2D] px-4 py-2 text-xs font-extrabold text-[#FFFDF8] hover:bg-[#982D22] disabled:opacity-50"
             >
               <Trophy className="h-3.5 w-3.5" /> Simpan & Selesaikan Sesi

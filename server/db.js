@@ -74,6 +74,7 @@ export async function initDb() {
           quota INTEGER NOT NULL DEFAULT 4,
           teams_json TEXT DEFAULT NULL,
           winner_json TEXT DEFAULT NULL,
+          proof_photo TEXT DEFAULT NULL,
           created_at TEXT DEFAULT '',
           updated_at TEXT DEFAULT ''
         );
@@ -115,6 +116,7 @@ export async function initDb() {
         );
 
         ALTER TABLE schedules ADD COLUMN IF NOT EXISTS winner_json TEXT DEFAULT NULL;
+        ALTER TABLE schedules ADD COLUMN IF NOT EXISTS proof_photo TEXT DEFAULT NULL;
       `);
       return;
     }
@@ -152,6 +154,7 @@ export async function initDb() {
         quota INTEGER NOT NULL DEFAULT 4,
         teams_json TEXT DEFAULT NULL,
         winner_json TEXT DEFAULT NULL,
+        proof_photo TEXT DEFAULT NULL,
         created_at TEXT DEFAULT (datetime('now')),
         updated_at TEXT DEFAULT (datetime('now'))
       );
@@ -204,6 +207,9 @@ export async function initDb() {
     }
     if (!scheduleCols.some((col) => col.name === 'winner_json')) {
       db.exec('ALTER TABLE schedules ADD COLUMN winner_json TEXT DEFAULT NULL');
+    }
+    if (!scheduleCols.some((col) => col.name === 'proof_photo')) {
+      db.exec('ALTER TABLE schedules ADD COLUMN proof_photo TEXT DEFAULT NULL');
     }
   })().catch((err) => {
     initPromise = null;

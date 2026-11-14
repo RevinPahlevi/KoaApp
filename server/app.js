@@ -6,7 +6,7 @@ import { execute, insertReturningId, queryAll, queryOne } from './db.js';
 const app = express();
 
 app.use(cors());
-app.use(express.json({ type: ['application/json', 'text/plain'] }));
+app.use(express.json({ limit: '5mb', type: ['application/json', 'text/plain'] }));
 
 const nowIso = () => new Date().toISOString();
 
@@ -242,7 +242,7 @@ app.get('/api/schedules', async (req, res) => {
   let query = `
     SELECT s.id, s.code, s.title, s.description, s.creator_name, s.mode, s.status,
            s.final_start_at, s.final_end_at, s.location_name, s.location_address,
-           s.location_maps_url, s.quota, s.winner_json, s.created_at, s.updated_at,
+           s.location_maps_url, s.quota, s.winner_json, s.proof_photo, s.created_at, s.updated_at,
            (SELECT COUNT(*) FROM rsvps r WHERE r.schedule_id = s.id AND r.status = 'attending') AS attending_count,
            (SELECT COUNT(*) FROM rsvps r WHERE r.schedule_id = s.id AND r.status = 'maybe') AS maybe_count,
            (SELECT COUNT(DISTINCT participant_name) FROM poll_votes pv WHERE pv.schedule_id = s.id) AS voter_count
@@ -448,13 +448,25 @@ app.patch('/api/schedules/:code', async (req, res) => {
     status,
     finalize_option_id,
     winner_team_number,
+    proof_photo,
     actor_name = schedule.creator_name,
   } = req.body;
+
+  if (proof_photo !== undefined && proof_photo !== null && proof_photo !== '') {
+    if (typeof proof_photo !== 'string' || !proof_photo.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Format bukti foto tidak valid. Gunakan file gambar.' });
+    }
+    if (proof_photo.length > 4 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Ukuran bukti foto terlalu besar. Maksimal sekitar 3 MB.' });
+    }
+  }
 
   let nextStartAt = final_start_at !== undefined ? final_start_at : schedule.final_start_at;
   let nextEndAt = final_end_at !== undefined ? final_end_at : schedule.final_end_at;
   let nextStatus = status !== undefined ? status : schedule.status;
   let nextWinnerJson = schedule.winner_json;
+  let nextProofPhoto =
+    proof_photo !== undefined ? (proof_photo ? proof_photo : null) : schedule.proof_photo;
   let logMessage = 'Memperbarui detail jadwal.';
   let actionType = 'updated';
 
@@ -513,6 +525,7 @@ app.patch('/api/schedules/:code', async (req, res) => {
       quota = ?,
       status = ?,
       winner_json = ?,
+      proof_photo = ?,
       updated_at = ?
     WHERE id = ?`,
     [
@@ -526,6 +539,7 @@ app.patch('/api/schedules/:code', async (req, res) => {
       quota !== undefined ? Math.max(0, Number(quota) || 0) : schedule.quota,
       nextStatus,
       nextWinnerJson,
+      nextProofPhoto,
       nowIso(),
       schedule.id,
     ]
