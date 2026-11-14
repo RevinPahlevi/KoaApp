@@ -131,7 +131,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#EFE9DB] text-[#3E2723]">
+    <div className="relative min-h-screen flex flex-col bg-transparent text-[#3E2723]">
+      <img
+        src="/bg-koa.svg"
+        alt=""
+        aria-hidden="true"
+        className="fixed inset-0 -z-10 h-full w-full object-cover pointer-events-none select-none"
+      />
       {/* Marawa Top Accent Stripe (Merah Bata - Kuning Mustard - Cokelat Kopi) */}
       <div className="grid grid-cols-3 h-1.5 w-full">
         <div className="bg-[#B83A2D]" />
