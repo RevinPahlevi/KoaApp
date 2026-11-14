@@ -40,16 +40,19 @@ const DEVELOPERS = [
     name: 'Revin Pahlevi',
     role: 'Fullstack Developer',
     photo: '/images/revin.jpg',
+    imgClass: 'object-center',
   },
   {
     name: 'Rahil Akram Hammad',
     role: 'UI/UX Designer',
     photo: '/images/rahil.jpeg',
+    imgClass: 'object-center',
   },
   {
     name: 'Ervizon Fariz',
     role: 'System Analyst',
     photo: '/images/ervizon.jpeg',
+    imgClass: 'object-bottom',
   },
 ];
 
@@ -141,11 +144,11 @@ export default function InfoTab() {
               key={dev.name}
               className="group overflow-hidden rounded-2xl border border-[#DDD2BC] bg-[#FAF6EE] p-4 text-center shadow-2xs hover:border-[#B83A2D] transition"
             >
-              <div className="mx-auto mb-3 h-28 w-28 overflow-hidden rounded-2xl border-2 border-[#E0A928] bg-[#EFE9DB] shadow-xs">
+              <div className="mx-auto mb-4 w-full max-w-[220px] aspect-[3/4] overflow-hidden rounded-2xl border-2 border-[#E0A928] bg-[#EFE9DB] shadow-sm">
                 <img
                   src={dev.photo}
                   alt={dev.name}
-                  className="h-full w-full object-cover object-top group-hover:scale-105 transition duration-300"
+                  className={`h-full w-full object-cover ${dev.imgClass} group-hover:scale-105 transition duration-300`}
                 />
               </div>
               <div className="text-base font-extrabold text-[#3E2723]">{dev.name}</div>
