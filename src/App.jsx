@@ -24,6 +24,7 @@ import HistoryStatsTab from './components/HistoryStatsTab';
 import InfoTab from './components/InfoTab';
 import DashboardTab from './components/DashboardTab';
 import AdminLoginPage from './components/AdminLoginPage';
+import { useToast } from './components/ToastContext';
 import { clearAdminToken, formatDateTimeID, getAdminToken } from './utils/storage';
 
 function parseCodeFromPath() {
@@ -36,6 +37,7 @@ function isAdminPath() {
 }
 
 export default function App() {
+  const { notify } = useToast();
   const [activeCode, setActiveCode] = useState(parseCodeFromPath);
   const [showAdminLogin, setShowAdminLogin] = useState(isAdminPath);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -109,6 +111,7 @@ export default function App() {
   const handleAdminLogout = () => {
     clearAdminToken();
     setIsAdmin(false);
+    notify.info('Anda telah keluar dari mode Admin.');
   };
 
   const handleAdminQuickDelete = async (e, s) => {
@@ -117,9 +120,10 @@ export default function App() {
     if (!ok) return;
     try {
       await api.deleteSchedule(s.code);
+      notify.success(`Jadwal "${s.title}" (${s.code}) berhasil dihapus.`);
       loadSchedules();
     } catch (err) {
-      alert(err.message || 'Gagal menghapus jadwal.');
+      notify.error(err.message || 'Gagal menghapus jadwal.');
     }
   };
 
@@ -151,7 +155,7 @@ export default function App() {
           <button
             onClick={() => {
               navigateHome();
-              setActiveTab('schedules');
+              setActiveTab('dashboard');
             }}
             className="flex items-center gap-3 text-left group"
           >
@@ -264,6 +268,7 @@ export default function App() {
             onBack={navigateHome}
             onSuccess={() => {
               setIsAdmin(true);
+              notify.success('Berhasil login sebagai Admin KoaPlay!');
               navigateHome();
             }}
           />
@@ -534,9 +539,11 @@ export default function App() {
 
       {showCreate && (
         <CreateScheduleModal
+          isAdmin={isAdmin}
           onClose={() => setShowCreate(false)}
           onCreated={(created) => {
             setShowCreate(false);
+            notify.success(`Jadwal "${created.title}" (${created.code}) berhasil dibuat!`);
             navigateToSchedule(created.code);
           }}
         />

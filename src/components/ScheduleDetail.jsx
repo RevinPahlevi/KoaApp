@@ -27,6 +27,7 @@ import {
 import { api } from '../api';
 import StatusBadge from './StatusBadge';
 import { compressImageFile } from '../utils/image';
+import { useToast } from './ToastContext';
 import {
   formatDateTimeID,
   formatShortDateID,
@@ -40,6 +41,7 @@ import {
 } from '../utils/storage';
 
 export default function ScheduleDetail({ code, onBack }) {
+  const { notify } = useToast();
   const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -104,11 +106,18 @@ export default function ScheduleDetail({ code, onBack }) {
   const copyText = (text, key) => {
     navigator.clipboard.writeText(text);
     setCopied(key);
+    const labelMap = {
+      code: 'Kode jadwal berhasil disalin!',
+      link: 'Link jadwal berhasil disalin!',
+      hostlink: 'Link Host berhasil disalin!',
+    };
+    notify.info(labelMap[key] || 'Berhasil disalin ke clipboard!');
     setTimeout(() => setCopied(''), 2000);
   };
 
   const shareToWhatsApp = () => {
     if (!schedule) return;
+    notify.info('Membuka WhatsApp untuk membagikan jadwal...');
     const timeText =
       schedule.status === 'polling'
         ? 'Sedang Voting Waktu'
@@ -168,7 +177,9 @@ export default function ScheduleDetail({ code, onBack }) {
   const handleSubmitVote = async () => {
     setActionError('');
     if (!playerName.trim()) {
-      setActionError('Masukkan nama Anda terlebih dahulu sebelum melakukan voting.');
+      const msg = 'Masukkan nama Anda terlebih dahulu sebelum melakukan voting.';
+      setActionError(msg);
+      notify.error(msg);
       return;
     }
     savePlayerName(playerName);
@@ -179,8 +190,10 @@ export default function ScheduleDetail({ code, onBack }) {
         option_ids: selectedOptions,
       });
       setSchedule(updated);
+      notify.success('Pilihan voting jadwal berhasil disimpan!');
     } catch (err) {
       setActionError(err.message);
+      notify.error(err.message || 'Gagal menyimpan voting.');
     } finally {
       setSubmitting(false);
     }
@@ -190,17 +203,15 @@ export default function ScheduleDetail({ code, onBack }) {
     setActionError('');
     setRsvpFeedback(null);
     if (!playerName.trim()) {
-      setRsvpFeedback({
-        type: 'error',
-        text: 'Masukkan nama Anda terlebih dahulu di kotak "Nama Anda" di atas.',
-      });
+      const msg = 'Masukkan nama Anda terlebih dahulu di kotak "Nama Anda" di atas.';
+      setRsvpFeedback({ type: 'error', text: msg });
+      notify.error(msg);
       return;
     }
     if (!selectedRsvpStatus) {
-      setRsvpFeedback({
-        type: 'error',
-        text: 'Pilih salah satu status (Hadir, Belum Pasti, atau Tidak Hadir) terlebih dahulu.',
-      });
+      const msg = 'Pilih salah satu status (Hadir, Belum Pasti, atau Tidak Hadir) terlebih dahulu.';
+      setRsvpFeedback({ type: 'error', text: msg });
+      notify.error(msg);
       return;
     }
     savePlayerName(playerName);
@@ -212,15 +223,23 @@ export default function ScheduleDetail({ code, onBack }) {
         note: rsvpNote,
       });
       setSchedule(updated);
+      const statusText =
+        selectedRsvpStatus === 'attending'
+          ? 'Hadir'
+          : selectedRsvpStatus === 'maybe'
+          ? 'Belum Pasti'
+          : 'Tidak Hadir';
       setRsvpFeedback({
         type: 'success',
         text: 'Konfirmasi kehadiran berhasil disimpan ke database!',
       });
+      notify.success(`Konfirmasi kehadiran (${statusText}) berhasil disimpan!`);
     } catch (err) {
       setRsvpFeedback({
         type: 'error',
         text: err.message,
       });
+      notify.error(err.message || 'Gagal menyimpan konfirmasi kehadiran.');
     } finally {
       setSubmitting(false);
     }
@@ -235,8 +254,10 @@ export default function ScheduleDetail({ code, onBack }) {
         actor_name: playerName.trim() || schedule.creator_name,
       });
       setSchedule(updated);
+      notify.success('Jadwal final berhasil ditetapkan dari hasil voting!');
     } catch (err) {
       setActionError(err.message);
+      notify.error(err.message || 'Gagal menetapkan jadwal final.');
     } finally {
       setSubmitting(false);
     }
@@ -250,8 +271,11 @@ export default function ScheduleDetail({ code, onBack }) {
     try {
       const compressed = await compressImageFile(file);
       setProofPhoto(compressed);
+      notify.info('Foto bukti bermain siap disimpan bersama sesi.');
     } catch (err) {
-      setActionError(err.message || 'Gagal memproses foto.');
+      const msg = err.message || 'Gagal memproses foto.';
+      setActionError(msg);
+      notify.error(msg);
     } finally {
       setPhotoProcessing(false);
       e.target.value = '';
@@ -271,8 +295,16 @@ export default function ScheduleDetail({ code, onBack }) {
       setSchedule(updated);
       setCompleting(false);
       setProofPhoto('');
+      if (newStatus === 'completed') {
+        notify.success('Sesi permainan berhasil ditandai selesai!');
+      } else if (newStatus === 'cancelled') {
+        notify.info('Jadwal permainan telah dibatalkan.');
+      } else if (newStatus === 'scheduled') {
+        notify.success('Jadwal berhasil dibuka kembali!');
+      }
     } catch (err) {
       setActionError(err.message);
+      notify.error(err.message || 'Gagal memperbarui status jadwal.');
     } finally {
       setSubmitting(false);
     }
@@ -284,8 +316,10 @@ export default function ScheduleDetail({ code, onBack }) {
     try {
       const updated = await api.shuffleTeams(code);
       setSchedule(updated);
+      notify.success('Pembagian tim mandan berhasil diacak ulang!');
     } catch (err) {
       setActionError(err.message);
+      notify.error(err.message || 'Gagal mengacak tim mandan.');
     } finally {
       setSubmitting(false);
     }
@@ -301,9 +335,11 @@ export default function ScheduleDetail({ code, onBack }) {
     try {
       await api.deleteSchedule(code);
       removeHostToken(code);
+      notify.success(`Jadwal "${schedule.title}" berhasil dihapus dari database.`);
       onBack();
     } catch (err) {
       setActionError(err.message);
+      notify.error(err.message || 'Gagal menghapus jadwal.');
       setSubmitting(false);
     }
   };
@@ -323,10 +359,13 @@ export default function ScheduleDetail({ code, onBack }) {
     setActionError('');
     if (
       editStartAt &&
+      !schedule.is_admin &&
       schedule.status !== 'completed' &&
       new Date(editStartAt).getTime() < Date.now()
     ) {
-      setActionError('Tanggal dan jam bermain tidak boleh waktu yang sudah lewat.');
+      const msg = 'Tanggal dan jam bermain tidak boleh waktu yang sudah lewat.';
+      setActionError(msg);
+      notify.error(msg);
       return;
     }
     setSubmitting(true);
@@ -342,8 +381,10 @@ export default function ScheduleDetail({ code, onBack }) {
       });
       setSchedule(updated);
       setEditing(false);
+      notify.success('Perubahan detail jadwal berhasil disimpan!');
     } catch (err) {
       setActionError(err.message);
+      notify.error(err.message || 'Gagal menyimpan perubahan jadwal.');
     } finally {
       setSubmitting(false);
     }
@@ -792,7 +833,11 @@ export default function ScheduleDetail({ code, onBack }) {
             {schedule.status !== 'polling' && (
               <input
                 type="datetime-local"
-                min={schedule.status === 'completed' ? undefined : getNowLocalDateTimeInput()}
+                min={
+                  schedule.is_admin || schedule.status === 'completed'
+                    ? undefined
+                    : getNowLocalDateTimeInput()
+                }
                 value={editStartAt}
                 onChange={(e) => setEditStartAt(e.target.value)}
                 className="rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3 py-2 text-base sm:text-sm"

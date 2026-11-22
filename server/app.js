@@ -299,6 +299,7 @@ app.get('/api/schedules/:code', async (req, res) => {
 
 // Create a new schedule (no login required)
 app.post('/api/schedules', async (req, res) => {
+  const isAdmin = isAdminRequest(req);
   const {
     title,
     description = '',
@@ -323,7 +324,7 @@ app.post('/api/schedules', async (req, res) => {
     if (!final_start_at) {
       return res.status(400).json({ error: 'Tanggal dan jam bermain wajib diisi untuk jadwal langsung.' });
     }
-    if (new Date(final_start_at).getTime() < Date.now() - 60000) {
+    if (!isAdmin && new Date(final_start_at).getTime() < Date.now() - 60000) {
       return res
         .status(400)
         .json({ error: 'Tanggal dan jam bermain tidak boleh di hari atau jam yang sudah lewat.' });
@@ -334,13 +335,15 @@ app.post('/api/schedules', async (req, res) => {
     if (!Array.isArray(poll_options) || poll_options.length < 2) {
       return res.status(400).json({ error: 'Mode polling membutuhkan minimal 2 opsi waktu.' });
     }
-    const hasPast = poll_options.some(
-      (opt) => opt?.start_at && new Date(opt.start_at).getTime() < Date.now() - 60000
-    );
-    if (hasPast) {
-      return res
-        .status(400)
-        .json({ error: 'Opsi waktu polling tidak boleh di tanggal atau jam yang sudah lewat.' });
+    if (!isAdmin) {
+      const hasPast = poll_options.some(
+        (opt) => opt?.start_at && new Date(opt.start_at).getTime() < Date.now() - 60000
+      );
+      if (hasPast) {
+        return res
+          .status(400)
+          .json({ error: 'Opsi waktu polling tidak boleh di tanggal atau jam yang sudah lewat.' });
+      }
     }
   }
 
@@ -415,7 +418,7 @@ app.post('/api/schedules', async (req, res) => {
 
   const created = await queryOne('SELECT * FROM schedules WHERE id = ?', [scheduleId]);
   res.status(201).json({
-    ...(await formatScheduleDetail(created, hostToken)),
+    ...(await formatScheduleDetail(created, hostToken, isAdmin)),
     host_token: hostToken,
   });
 });
@@ -781,7 +784,7 @@ app.get('/api/stats', async (req, res) => {
     `SELECT MIN(r.participant_name) AS name, COUNT(*) AS games_count
      FROM rsvps r
      JOIN schedules s ON s.id = r.schedule_id
-     WHERE r.status = 'attending' AND s.status IN ('scheduled', 'completed')
+     WHERE r.status = 'attending' AND s.status = 'completed'
      GROUP BY LOWER(r.participant_name)
      ORDER BY games_count DESC, name ASC
      LIMIT 10`
@@ -819,7 +822,7 @@ app.get('/api/dashboard', async (req, res) => {
     `SELECT r.participant_name, s.status
      FROM rsvps r
      JOIN schedules s ON s.id = r.schedule_id
-     WHERE r.status = 'attending' AND s.status IN ('scheduled', 'completed')`
+     WHERE r.status = 'attending' AND s.status = 'completed'`
   );
 
   // Build individual leaderboard (wins + games_count)

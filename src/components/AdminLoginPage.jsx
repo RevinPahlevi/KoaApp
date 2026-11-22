@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { ArrowLeft, Lock, ShieldCheck } from 'lucide-react';
 import { api } from '../api';
 import { saveAdminToken } from '../utils/storage';
+import { useToast } from './ToastContext';
 
 export default function AdminLoginPage({ onSuccess, onBack }) {
+  const { notify } = useToast();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,7 +15,9 @@ export default function AdminLoginPage({ onSuccess, onBack }) {
     e.preventDefault();
     setError('');
     if (!username.trim() || !password) {
-      setError('Username dan password wajib diisi.');
+      const msg = 'Username dan password wajib diisi.';
+      setError(msg);
+      notify.error(msg);
       return;
     }
     setLoading(true);
@@ -22,7 +26,9 @@ export default function AdminLoginPage({ onSuccess, onBack }) {
       saveAdminToken(res.token);
       onSuccess(res);
     } catch (err) {
-      setError(err.message || 'Login gagal.');
+      const msg = err.message || 'Login gagal.';
+      setError(msg);
+      notify.error(msg);
     } finally {
       setLoading(false);
     }

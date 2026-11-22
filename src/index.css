@@ -23,3 +23,18 @@
     color: #3E2723;
   }
 }
+
+@keyframes toastPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-pop-in {
+  animation: toastPopIn 0.22s ease-out both;
+}

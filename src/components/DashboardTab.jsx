@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Award,
+  BarChart3,
   Calendar as CalendarIcon,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   MapPin,
   Trophy,
   Users,
@@ -26,6 +29,9 @@ function toLocalDateKey(isoOrDate) {
 export default function DashboardTab({ onSelectSchedule }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAllTeams, setShowAllTeams] = useState(false);
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [activityMetric, setActivityMetric] = useState('sessions');
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -80,6 +86,57 @@ export default function DashboardTab({ onSelectSchedule }) {
   const selectedSchedules = schedulesByDate.get(selectedDateKey) || [];
   const todayKey = toLocalDateKey(new Date());
 
+  // Weekly activity bar chart data (last 7 days including today)
+  const weeklyActivity = useMemo(() => {
+    const now = new Date();
+    const days = [];
+    const shortMonthFmt = new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'short',
+    });
+
+    for (let offset = 6; offset >= 0; offset--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+      const key = toLocalDateKey(d);
+      const dayItems = schedulesByDate.get(key) || [];
+      const completedItems = dayItems.filter((item) => item.status === 'completed');
+      const sessionsCount = completedItems.length;
+      const playersCount = completedItems.reduce(
+        (sum, item) => sum + Number(item.attending_count || 0),
+        0
+      );
+
+      days.push({
+        key,
+        dayName: DAY_NAMES[d.getDay()],
+        shortDate: shortMonthFmt.format(d),
+        isToday: offset === 0,
+        sessionsCount,
+        playersCount,
+        totalScheduled: dayItems.length,
+      });
+    }
+    return days;
+  }, [schedulesByDate]);
+
+  const weeklyTotals = useMemo(() => {
+    const totalSessions = weeklyActivity.reduce((s, d) => s + d.sessionsCount, 0);
+    const totalPlayers = weeklyActivity.reduce((s, d) => s + d.playersCount, 0);
+    const activeDays = weeklyActivity.filter((d) => d.sessionsCount > 0).length;
+    const maxVal = Math.max(
+      1,
+      ...weeklyActivity.map((d) =>
+        activityMetric === 'sessions' ? d.sessionsCount : d.playersCount
+      )
+    );
+    return { totalSessions, totalPlayers, activeDays, maxVal };
+  }, [weeklyActivity, activityMetric]);
+
+  const teamList = data?.team_leaderboard || [];
+  const playerList = data?.player_leaderboard || [];
+  const displayedTeams = showAllTeams ? teamList : teamList.slice(0, 5);
+  const displayedPlayers = showAllPlayers ? playerList : playerList.slice(0, 5);
+
   const prevMonth = () =>
     setCurrentMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1));
   const nextMonth = () =>
@@ -107,13 +164,13 @@ export default function DashboardTab({ onSelectSchedule }) {
             </div>
           </div>
 
-          {!data?.team_leaderboard?.length ? (
+          {!teamList.length ? (
             <p className="text-sm text-[#7A5C52] py-4">
               Belum ada data kemenangan mandan. Tandai sesi selesai dan pilih tim pemenang.
             </p>
           ) : (
             <div className="space-y-2.5">
-              {data.team_leaderboard.map((team, idx) => (
+              {displayedTeams.map((team, idx) => (
                 <div
                   key={team.pair_name}
                   className="flex items-center justify-between rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-3"
@@ -142,6 +199,25 @@ export default function DashboardTab({ onSelectSchedule }) {
                   </span>
                 </div>
               ))}
+
+              {teamList.length > 5 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllTeams((prev) => !prev)}
+                  className="mt-1 w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2 text-xs font-extrabold text-[#3E2723] hover:bg-[#EFE9DB] transition"
+                >
+                  {showAllTeams ? (
+                    <>
+                      <ChevronUp className="h-3.5 w-3.5 text-[#B83A2D]" /> Tampilkan 5 Teratas
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3.5 w-3.5 text-[#B83A2D]" /> Tampilkan Semua (
+                      {teamList.length})
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
         </section>
@@ -152,15 +228,19 @@ export default function DashboardTab({ onSelectSchedule }) {
             <Award className="h-5 w-5 text-[#B83A2D]" />
             <div>
               <h3 className="text-base font-extrabold text-[#3E2723]">Leaderboard per Orangan</h3>
-              <p className="text-xs text-[#7A5C52]">Peringkat individu berdasarkan menang & hadir</p>
+              <p className="text-xs text-[#7A5C52]">
+                Peringkat individu berdasarkan menang &amp; sesi selesai
+              </p>
             </div>
           </div>
 
-          {!data?.player_leaderboard?.length ? (
-            <p className="text-sm text-[#7A5C52] py-4">Belum ada data pemain.</p>
+          {!playerList.length ? (
+            <p className="text-sm text-[#7A5C52] py-4">
+              Belum ada data pemain. Pemain terhitung main setelah jadwal ditandai selesai.
+            </p>
           ) : (
             <div className="space-y-2.5">
-              {data.player_leaderboard.map((p, idx) => (
+              {displayedPlayers.map((p, idx) => (
                 <div
                   key={p.name}
                   className="flex items-center justify-between rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-3"
@@ -191,10 +271,176 @@ export default function DashboardTab({ onSelectSchedule }) {
                   </span>
                 </div>
               ))}
+
+              {playerList.length > 5 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllPlayers((prev) => !prev)}
+                  className="mt-1 w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#DDD2BC] bg-[#FAF6EE] px-3.5 py-2 text-xs font-extrabold text-[#3E2723] hover:bg-[#EFE9DB] transition"
+                >
+                  {showAllPlayers ? (
+                    <>
+                      <ChevronUp className="h-3.5 w-3.5 text-[#B83A2D]" /> Tampilkan 5 Teratas
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3.5 w-3.5 text-[#B83A2D]" /> Tampilkan Semua (
+                      {playerList.length})
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
         </section>
       </div>
+
+      {/* Visualisasi Keaktifan Mingguan (Grafik Batang 7 Hari Terakhir) */}
+      <section className="rounded-3xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 sm:p-6 shadow-xs space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-[#B83A2D]" />
+            <div>
+              <h2 className="text-base sm:text-lg font-extrabold text-[#3E2723]">
+                Keaktifan Bermain (7 Hari Terakhir)
+              </h2>
+              <p className="text-xs text-[#7A5C52]">
+                Grafik batang keaktifan per hari berdasarkan sesi permainan yang telah ditandai selesai
+              </p>
+            </div>
+          </div>
+
+          <div className="inline-flex rounded-xl bg-[#EFE9DB] p-1 border border-[#DDD2BC]">
+            <button
+              type="button"
+              onClick={() => setActivityMetric('sessions')}
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                activityMetric === 'sessions'
+                  ? 'bg-[#3E2723] text-[#E0A928] shadow-2xs'
+                  : 'text-[#5D4037] hover:text-[#3E2723]'
+              }`}
+            >
+              Sesi Main
+            </button>
+            <button
+              type="button"
+              onClick={() => setActivityMetric('players')}
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                activityMetric === 'players'
+                  ? 'bg-[#3E2723] text-[#E0A928] shadow-2xs'
+                  : 'text-[#5D4037] hover:text-[#3E2723]'
+              }`}
+            >
+              Pemain Main
+            </button>
+          </div>
+        </div>
+
+        {/* Summary Pills */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-2.5">
+            <div className="text-[11px] font-bold text-[#7A5C52]">Sesi Minggu Ini</div>
+            <div className="text-lg sm:text-xl font-extrabold text-[#3E2723]">
+              {weeklyTotals.totalSessions}
+            </div>
+          </div>
+          <div className="rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-2.5">
+            <div className="text-[11px] font-bold text-[#7A5C52]">Total Pemain Main</div>
+            <div className="text-lg sm:text-xl font-extrabold text-[#B83A2D]">
+              {weeklyTotals.totalPlayers}
+            </div>
+          </div>
+          <div className="rounded-xl bg-[#FAF6EE] border border-[#EFE9DB] px-3.5 py-2.5">
+            <div className="text-[11px] font-bold text-[#7A5C52]">Hari Aktif</div>
+            <div className="text-lg sm:text-xl font-extrabold text-[#3E2723]">
+              {weeklyTotals.activeDays}{' '}
+              <span className="text-xs font-bold text-[#7A5C52]">/ 7 hari</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bar Chart Canvas */}
+        <div className="rounded-2xl bg-[#FAF6EE] border border-[#DDD2BC] p-4 sm:p-5">
+          <div className="relative h-52 flex items-end justify-between gap-2 sm:gap-4 pt-6 pb-1">
+            {/* Subtle horizontal reference lines */}
+            <div className="pointer-events-none absolute inset-x-0 top-6 bottom-1 flex flex-col justify-between">
+              <div className="border-t border-dashed border-[#DDD2BC]/80 w-full" />
+              <div className="border-t border-dashed border-[#DDD2BC]/80 w-full" />
+              <div className="border-t border-dashed border-[#DDD2BC]/80 w-full" />
+              <div className="border-t border-[#DDD2BC] w-full" />
+            </div>
+
+            {weeklyActivity.map((day) => {
+              const value =
+                activityMetric === 'sessions' ? day.sessionsCount : day.playersCount;
+              const barHeightPx =
+                value > 0 ? Math.max(18, Math.round((value / weeklyTotals.maxVal) * 144)) : 4;
+
+              return (
+                <button
+                  key={day.key}
+                  type="button"
+                  onClick={() => {
+                    setSelectedDateKey(day.key);
+                    const d = new Date(`${day.key}T00:00:00`);
+                    setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+                  }}
+                  title={`${day.dayName}, ${day.shortDate}: ${day.sessionsCount} sesi selesai, ${day.playersCount} pemain main`}
+                  className="group relative z-10 flex-1 h-full flex flex-col items-center justify-end focus:outline-none"
+                >
+                  {/* Value label above bar */}
+                  <span
+                    className={`mb-1.5 text-xs font-extrabold transition ${
+                      value > 0
+                        ? day.isToday
+                          ? 'text-[#B83A2D]'
+                          : 'text-[#3E2723]'
+                        : 'text-[#7A5C52]/55'
+                    }`}
+                  >
+                    {value}
+                  </span>
+
+                  {/* Bar track & fill */}
+                  <div className="w-full max-w-[46px] flex items-end justify-center">
+                    <div
+                      style={{ height: `${barHeightPx}px` }}
+                      className={`w-full rounded-t-xl transition-all duration-300 ${
+                        value === 0
+                          ? 'bg-[#DDD2BC]/70'
+                          : day.isToday
+                          ? 'bg-gradient-to-t from-[#B83A2D] to-[#E0A928] shadow-xs group-hover:brightness-105'
+                          : 'bg-gradient-to-t from-[#3E2723] to-[#5D4037] group-hover:from-[#B83A2D] group-hover:to-[#E0A928]'
+                      }`}
+                    />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* X-Axis Day Labels */}
+          <div className="mt-2.5 grid grid-cols-7 gap-2 sm:gap-4 text-center">
+            {weeklyActivity.map((day) => (
+              <div key={`label-${day.key}`} className="flex flex-col items-center">
+                <span
+                  className={`text-xs font-extrabold ${
+                    day.isToday ? 'text-[#B83A2D]' : 'text-[#3E2723]'
+                  }`}
+                >
+                  {day.dayName}
+                </span>
+                <span className="text-[10px] font-semibold text-[#7A5C52]">{day.shortDate}</span>
+                {day.isToday && (
+                  <span className="mt-0.5 rounded-full bg-[#B83A2D] px-1.5 py-0.2 text-[9px] font-extrabold text-[#FFFDF8]">
+                    Hari ini
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Kalender Jadwal */}
       <section className="rounded-3xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 sm:p-6 shadow-xs space-y-5">

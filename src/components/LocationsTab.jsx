@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, MapPin, Plus, Trash2 } from 'lucide-react';
 import { api } from '../api';
+import { useToast } from './ToastContext';
 
 export default function LocationsTab() {
+  const { notify } = useToast();
   const [locations, setLocations] = useState([]);
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -29,25 +31,33 @@ export default function LocationsTab() {
   const handleAdd = async (e) => {
     e.preventDefault();
     setError('');
-    if (!name.trim()) return;
+    const locName = name.trim();
+    if (!locName) return;
     try {
       await api.createLocation({
-        name: name.trim(),
+        name: locName,
         address: address.trim(),
         maps_url: mapsUrl.trim(),
       });
       setName('');
       setAddress('');
       setMapsUrl('');
+      notify.success(`Lokasi "${locName}" berhasil ditambahkan!`);
       load();
     } catch (err) {
       setError(err.message);
+      notify.error(err.message || 'Gagal menambah lokasi.');
     }
   };
 
-  const handleDelete = async (id) => {
-    await api.deleteLocation(id);
-    setLocations((prev) => prev.filter((l) => l.id !== id));
+  const handleDelete = async (loc) => {
+    try {
+      await api.deleteLocation(loc.id);
+      setLocations((prev) => prev.filter((l) => l.id !== loc.id));
+      notify.info(`Lokasi "${loc.name}" berhasil dihapus.`);
+    } catch (err) {
+      notify.error(err.message || 'Gagal menghapus lokasi.');
+    }
   };
 
   return (
@@ -129,7 +139,7 @@ export default function LocationsTab() {
                   )}
                 </div>
                 <button
-                  onClick={() => handleDelete(loc.id)}
+                  onClick={() => handleDelete(loc)}
                   className="rounded-lg p-1.5 text-[#7A5C52] hover:bg-[#FAE6E3] hover:text-[#B83A2D]"
                   title="Hapus lokasi"
                 >

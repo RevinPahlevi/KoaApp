@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { X, Plus, Trash2, Calendar, Vote, MapPin, Users } from 'lucide-react';
+import { X, Plus, Trash2, Calendar, Vote, MapPin, Users, ShieldCheck } from 'lucide-react';
 import { api } from '../api';
+import { useToast } from './ToastContext';
 import {
   getNowLocalDateTimeInput,
   getSavedPlayerName,
@@ -8,8 +9,9 @@ import {
   savePlayerName,
 } from '../utils/storage';
 
-export default function CreateScheduleModal({ onClose, onCreated }) {
-  const minDateTime = getNowLocalDateTimeInput();
+export default function CreateScheduleModal({ onClose, onCreated, isAdmin = false }) {
+  const { notify } = useToast();
+  const minDateTime = isAdmin ? undefined : getNowLocalDateTimeInput();
   const [creatorName, setCreatorName] = useState(getSavedPlayerName());
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -66,17 +68,23 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
     setError('');
 
     if (!creatorName.trim() || !title.trim()) {
-      setError('Nama Anda dan judul jadwal wajib diisi.');
+      const msg = 'Nama Anda dan judul jadwal wajib diisi.';
+      setError(msg);
+      notify.error(msg);
       return;
     }
 
     if (mode === 'direct') {
       if (!finalStartAt) {
-        setError('Silakan pilih tanggal & jam bermain.');
+        const msg = 'Silakan pilih tanggal & jam bermain.';
+        setError(msg);
+        notify.error(msg);
         return;
       }
-      if (new Date(finalStartAt).getTime() < Date.now()) {
-        setError('Tanggal dan jam bermain tidak boleh di hari atau jam yang sudah lewat.');
+      if (!isAdmin && new Date(finalStartAt).getTime() < Date.now()) {
+        const msg = 'Tanggal dan jam bermain tidak boleh di hari atau jam yang sudah lewat.';
+        setError(msg);
+        notify.error(msg);
         return;
       }
     }
@@ -84,15 +92,21 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
     const validPollOptions = pollOptions.filter((o) => o.start_at);
     if (mode === 'polling') {
       if (validPollOptions.length < 2) {
-        setError('Mode polling membutuhkan minimal 2 opsi waktu yang diisi.');
+        const msg = 'Mode polling membutuhkan minimal 2 opsi waktu yang diisi.';
+        setError(msg);
+        notify.error(msg);
         return;
       }
-      const hasPastOption = validPollOptions.some(
-        (o) => new Date(o.start_at).getTime() < Date.now()
-      );
-      if (hasPastOption) {
-        setError('Opsi waktu polling tidak boleh di tanggal atau jam yang sudah lewat.');
-        return;
+      if (!isAdmin) {
+        const hasPastOption = validPollOptions.some(
+          (o) => new Date(o.start_at).getTime() < Date.now()
+        );
+        if (hasPastOption) {
+          const msg = 'Opsi waktu polling tidak boleh di tanggal atau jam yang sudah lewat.';
+          setError(msg);
+          notify.error(msg);
+          return;
+        }
       }
     }
 
@@ -126,6 +140,7 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
       onCreated(created);
     } catch (err) {
       setError(err.message);
+      notify.error(err.message || 'Gagal membuat jadwal.');
     } finally {
       setLoading(false);
     }
@@ -151,6 +166,12 @@ export default function CreateScheduleModal({ onClose, onCreated }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
+          {isAdmin && (
+            <div className="flex items-center gap-2 rounded-xl bg-[#3E2723] border border-[#E0A928] px-3.5 py-2.5 text-xs font-bold text-[#EFE9DB]">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-[#E0A928]" />
+              <span>Mode Admin aktif — Anda bebas memilih tanggal &amp; jam lampau.</span>
+            </div>
+          )}
           {error && (
             <div className="rounded-xl bg-[#FAE6E3] border border-[#B83A2D]/30 px-4 py-3 text-sm font-semibold text-[#B83A2D]">
               {error}

@@ -62,11 +62,16 @@ export default function HistoryStatsTab({ onSelectSchedule }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Top Players */}
         <div className="rounded-2xl bg-[#FFFDF8] border border-[#DDD2BC] p-5 shadow-xs">
-          <div className="flex items-center gap-2 text-base font-extrabold text-[#3E2723] mb-4">
-            <Award className="h-5 w-5 text-[#E0A928]" /> Mandan Paling Rajin Hadir
+          <div className="flex items-center gap-2 text-base font-extrabold text-[#3E2723]">
+            <Award className="h-5 w-5 text-[#E0A928]" /> Mandan Paling Rajin Main
           </div>
+          <p className="text-xs text-[#7A5C52] mt-0.5 mb-4">
+            Terhitung dari jadwal permainan yang sudah ditandai selesai
+          </p>
           {!stats?.top_players?.length ? (
-            <p className="text-sm text-[#7A5C52]">Belum ada data partisipasi.</p>
+            <p className="text-sm text-[#7A5C52]">
+              Belum ada data partisipasi sesi selesai.
+            </p>
           ) : (
             <div className="space-y-2.5">
               {stats.top_players.map((p, idx) => (
